@@ -3,6 +3,7 @@ package server
 import "github.com/iamsayantan/MessageRooms/user"
 import "github.com/iamsayantan/MessageRooms/room"
 import "github.com/go-chi/chi"
+import chiware "github.com/go-chi/chi/middleware"
 import "net/http"
 import "encoding/json"
 
@@ -26,16 +27,23 @@ func NewServer(us user.Service, rs room.Service) *Server {
 	}
 
 	r := chi.NewRouter()
+	r.Use(chiware.AllowContentType("application/json"))
+	r.Use(ServeJson)
+
 	r.Method("GET", "/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := struct {
 			Message string `json:"message"`
 		}{Message: "Welcome to Message Rooms"}
 
-		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			_, _ = w.Write([]byte(err.Error()))
 		}
 	}))
+
+	r.Route("/user", func(r chi.Router) {
+		h := NewUserHandler(us)
+		r.Mount("/v1", h.Route())
+	})
 
 	s.router = r
 
@@ -49,10 +57,25 @@ type WebHandler interface {
 
 func encodeError(w http.ResponseWriter, errorCode int, message string) {
 	err := struct {
-		Message string `json:"message"`
-	}{Message: message}
+		Error string `json:"error"`
+	}{Error: message}
 
 	resp, _ := json.Marshal(err)
 	w.WriteHeader(errorCode)
-	w.Write(resp)
+	_, _ = w.Write(resp)
+}
+
+func sendResponse(w http.ResponseWriter, statusCode int, v interface{}) {
+	resp, _ := json.Marshal(v)
+
+	w.WriteHeader(statusCode)
+	_, _ = w.Write(resp)
+}
+
+func ServeJson(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("X-Powerd-By", "golang")
+		h.ServeHTTP(w, r)
+	})
 }
