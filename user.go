@@ -4,9 +4,9 @@ import "errors"
 
 // User type represents an user.
 type User struct {
-	ID       string
-	Password string
-	Nickname string
+	ID       string `json:"id"`
+	Password string `json:"-"`
+	Nickname string `json:"nickname"`
 }
 
 var (

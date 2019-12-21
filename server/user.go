@@ -1,47 +1,82 @@
 package server
 
 import (
-	"encoding/json"
+	"errors"
+	"net/http"
+
+	"gopkg.in/go-playground/validator.v10"
+
+	"github.com/go-chi/render"
+
 	"github.com/go-chi/chi"
 	"github.com/iamsayantan/MessageRooms/user"
-	"net/http"
 )
 
-type loginRequest struct {
-	Nickname string
-	Password string
+type authRequest struct {
+	Nickname string `json:"nickname" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
 type userHandler struct {
-	service user.Service
+	service  user.Service
+	validate *validator.Validate
 }
 
 func (h *userHandler) Route() chi.Router {
 	r := chi.NewRouter()
 	r.Post("/login", h.login)
+	r.Post("/register", h.register)
 
 	return r
 }
 
 func (h *userHandler) login(w http.ResponseWriter, r *http.Request) {
-	var loginReq loginRequest
+	var loginReq authRequest
 
-	if err := json.NewDecoder(r.Body).Decode(&loginReq); err != nil {
-		encodeError(w, http.StatusInternalServerError, err.Error())
+	err := decodeJSONBody(w, r, &loginReq)
+	if err != nil {
+		var mr *malformedRequest
+		if errors.As(err, &mr) {
+			render.Render(w, r, ErrInvalidRequest(mr))
+		} else {
+			render.Render(w, r, ErrInternalServer(err))
+		}
 		return
 	}
 
 	usr, er := h.service.Login(loginReq.Nickname, loginReq.Password)
 	if er != nil {
-		encodeError(w, http.StatusBadRequest, er.Error())
+		render.Render(w, r, ErrInvalidRequest(er))
 		return
 	}
 
 	sendResponse(w, http.StatusOK, usr)
 }
 
+func (h *userHandler) register(w http.ResponseWriter, r *http.Request) {
+	var registerRequest authRequest
+	err := decodeJSONBody(w, r, &registerRequest)
+	if err != nil {
+		var mr *malformedRequest
+		if errors.As(err, &mr) {
+			render.Render(w, r, ErrInvalidRequest(mr))
+		} else {
+			render.Render(w, r, ErrInternalServer(err))
+		}
+		return
+	}
+
+	usr, er := h.service.NewUser(registerRequest.Nickname, registerRequest.Password)
+	if er != nil {
+		render.Render(w, r, ErrInvalidRequest(er))
+		return
+	}
+
+	sendResponse(w, http.StatusCreated, usr)
+}
+
 // NewUserHandler returns new user handler.
-func NewUserHandler(s user.Service) WebHandler {
-	h := &userHandler{service: s}
+func NewUserHandler(s user.Service, v *validator.Validate) WebHandler {
+	h := &userHandler{service: s, validate: v}
 	return h
 }
