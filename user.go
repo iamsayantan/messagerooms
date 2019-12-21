@@ -1,21 +1,11 @@
 package messagerooms
 
-import "errors"
-
 // User type represents an user.
 type User struct {
 	ID       string `json:"id"`
 	Password string `json:"-"`
 	Nickname string `json:"nickname"`
 }
-
-var (
-	// ErrNicknameAlreadyTaken is returned when a nickname is already takne by someone.
-	ErrNicknameAlreadyTaken = errors.New("the nickname is already taken")
-
-	// ErrUserNotFound is returned when no user is found with the given field.
-	ErrUserNotFound = errors.New("user not found")
-)
 
 // UserRepository provides methods for interacting with User storage.
 type UserRepository interface {
