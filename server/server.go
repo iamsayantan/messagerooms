@@ -68,15 +68,6 @@ type WebHandler interface {
 	Route() chi.Router
 }
 
-func encodeError(w http.ResponseWriter, r *http.Request, errorCode int, message string) {
-	err := struct {
-		Error string `json:"error"`
-	}{Error: message}
-
-	render.Status(r, errorCode)
-	render.JSON(w, r, err)
-}
-
 func sendResponse(w http.ResponseWriter, statusCode int, v interface{}) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	resp, _ := json.Marshal(v)
@@ -162,6 +153,15 @@ func ErrNotFound(err error) render.Renderer {
 	}
 }
 
+// ErrUnAuthorized returns error response with appropiate status.
+func ErrUnAuthorized(err error) render.Renderer {
+	return &ErrResponse{
+		Err:            err,
+		HTTPStatusCode: http.StatusUnauthorized,
+		StatusText:     "Athentication Required",
+		ErrorText:      err.Error(),
+	}
+}
 // ErrInternalServer returns error response with appropiate status.
 func ErrInternalServer(err error) render.Renderer {
 	return &ErrResponse{

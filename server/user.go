@@ -4,12 +4,14 @@ import (
 	"errors"
 	"net/http"
 
+	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/MessageRooms/user"
+
 	"gopkg.in/go-playground/validator.v10"
 
 	"github.com/go-chi/render"
 
 	"github.com/go-chi/chi"
-	"github.com/iamsayantan/MessageRooms/user"
 )
 
 type authRequest struct {
@@ -50,7 +52,16 @@ func (h *userHandler) login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sendResponse(w, http.StatusOK, usr)
+	token, _ := h.service.GenerateAuthToken(*usr)
+	resp := struct {
+		User        *messagerooms.User `json:"user"`
+		AccessToken string             `json:"access_token"`
+	}{
+		User:        usr,
+		AccessToken: token,
+	}
+
+	sendResponse(w, http.StatusOK, resp)
 }
 
 func (h *userHandler) register(w http.ResponseWriter, r *http.Request) {
