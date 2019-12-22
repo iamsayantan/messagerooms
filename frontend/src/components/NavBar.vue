@@ -7,7 +7,7 @@
         </div>
         <div class="nav-right-section">
             <span class="welcome-message">Welcome <b>{{ name }}</b> </span>&nbsp;
-            <img v-bind:src="avatar" class="avatar">
+            <!-- <img v-bind:src="avatar" class="avatar"> -->
         </div>
     </nav>
 </div>

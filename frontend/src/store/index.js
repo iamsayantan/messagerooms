@@ -12,6 +12,13 @@ const store = new vuex.Store({
     mutations: {
         authenticate(state, {user, access_token}) {
             state.auth = Object.assign({}, {user, accessToken: access_token})
+        },
+        logout(state) {
+            const auth = {
+                user: null,
+                accessToken: null
+            }
+            state.auth = Object.assign({}, auth)
         }
     },
     getters: {

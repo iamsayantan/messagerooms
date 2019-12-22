@@ -1,6 +1,6 @@
 <template>
   <div class="booker">
-    <nav-bar :name="this.username" :avatar="this.avatar" />
+    <nav-bar :name="auth.user.nickname" />
     <div class="chat">
         <div class="container">
           <div class="msg-header">
