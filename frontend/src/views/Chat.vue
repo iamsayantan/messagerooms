@@ -89,6 +89,7 @@
 import { CometChat } from "@cometchat-pro/chat";
 import NavBar from "../components/NavBar.vue";
 import Spinner from "../components/Spinner.vue";
+import { mapGetters } from 'vuex'
 
 export default {
   name: "home",
@@ -108,54 +109,61 @@ export default {
       loadingMessages: false
     };
   },
+  computed: {
+    ...mapGetters(['auth'])
+  },
   mounted() {
-    this.loadingMessages = true
-    var listenerID = "UNIQUE_LISTENER_ID";
+    // this.loadingMessages = true
+    // var listenerID = "UNIQUE_LISTENER_ID";
 
-    const messagesRequest = new CometChat.MessagesRequestBuilder()
-      .setLimit(100)
-      .build()
-    messagesRequest.fetchPrevious().then(
-      messages => {
-        console.log("Message list fetched:", messages);
-          console.log("this.groupMessages", this.groupMessages)
-          this.groupMessages = [
-            ...this.groupMessages,
-            ...messages
-          ];
-          this.loadingMessages = false
-          this.$nextTick(() => {
-            this.scrollToBottom();
-          })
-      },
-      error => {
-        console.log("Message fetching failed with error:", error);
-      }
-    );
+    // const messagesRequest = new CometChat.MessagesRequestBuilder()
+    //   .setLimit(100)
+    //   .build()
+    // messagesRequest.fetchPrevious().then(
+    //   messages => {
+    //     console.log("Message list fetched:", messages);
+    //       console.log("this.groupMessages", this.groupMessages)
+    //       this.groupMessages = [
+    //         ...this.groupMessages,
+    //         ...messages
+    //       ];
+    //       this.loadingMessages = false
+    //       this.$nextTick(() => {
+    //         this.scrollToBottom();
+    //       })
+    //   },
+    //   error => {
+    //     console.log("Message fetching failed with error:", error);
+    //   }
+    // );
 
-    CometChat.addMessageListener(
-      listenerID,
-      new CometChat.MessageListener({
-        onTextMessageReceived: textMessage => {
-          console.log("Text message received successfully", textMessage);
-          // Handle text message
-          console.log(this.groupMessages)
-          this.groupMessages = [
-            ...this.groupMessages,
-            textMessage
-          ];
-          // console.log("avatar", textMessage.sender.avatar)
-          this.loadingMessages = false
-          this.$nextTick(() => {
-            this.scrollToBottom();
-          })
-        }
-      })
-    );
+    // CometChat.addMessageListener(
+    //   listenerID,
+    //   new CometChat.MessageListener({
+    //     onTextMessageReceived: textMessage => {
+    //       console.log("Text message received successfully", textMessage);
+    //       // Handle text message
+    //       console.log(this.groupMessages)
+    //       this.groupMessages = [
+    //         ...this.groupMessages,
+    //         textMessage
+    //       ];
+    //       // console.log("avatar", textMessage.sender.avatar)
+    //       this.loadingMessages = false
+    //       this.$nextTick(() => {
+    //         this.scrollToBottom();
+    //       })
+    //     }
+    //   })
+    // );
   },
 
   created() {
-    this.getLoggedInUser();
+    if (!this.auth.accessToken || !this.auth.user) {
+      this.$router.push('/login')
+    }
+
+    // this.getLoggedInUser();
   },
   methods: {
     getLoggedInUser() {

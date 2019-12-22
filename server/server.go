@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/go-chi/cors"
+
 	"gopkg.in/go-playground/validator.v10"
 
 	"github.com/go-chi/chi"
@@ -39,9 +41,14 @@ func NewServer(us user.Service, rs room.Service) *Server {
 	}
 
 	validate := validator.New()
-
+	cors := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+	})
 	r := chi.NewRouter()
 	r.Use(chiware.AllowContentType("application/json"))
+	r.Use(cors.Handler)
 
 	r.Method("GET", "/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := struct {
@@ -162,6 +169,7 @@ func ErrUnAuthorized(err error) render.Renderer {
 		ErrorText:      err.Error(),
 	}
 }
+
 // ErrInternalServer returns error response with appropiate status.
 func ErrInternalServer(err error) render.Renderer {
 	return &ErrResponse{
