@@ -2,11 +2,11 @@ package messagerooms
 
 // Room represents a single messaging room.
 type Room struct {
-	ID        string
-	RoomName  string
-	UserID    string
-	CreatedBy User
-	Users     []User
+	ID        string `json:"id"`
+	RoomName  string `json:"room_name"`
+	UserID    string `json:"-"`
+	CreatedBy User   `json:"created_by" gorm:"foreignkey:UserID"`
+	Users     []User `json:"users,omitempty" gorm:"many2many:room_users"`
 }
 
 // RoomRepository provides interface methods for interacting with rooms data store.

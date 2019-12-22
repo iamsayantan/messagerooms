@@ -46,6 +46,8 @@ func NewServer(us user.Service, rs room.Service) *Server {
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
 	})
+	am := newAuthMiddleware(us)
+
 	r := chi.NewRouter()
 	r.Use(chiware.AllowContentType("application/json"))
 	r.Use(cors.Handler)
@@ -62,6 +64,12 @@ func NewServer(us user.Service, rs room.Service) *Server {
 
 	r.Route("/user", func(r chi.Router) {
 		h := NewUserHandler(us, validate)
+		r.Mount("/v1", h.Route())
+	})
+
+	r.Route("/rooms", func(r chi.Router) {
+		r.Use(am.Register)
+		h := newRoomHandler(rs, validate)
 		r.Mount("/v1", h.Route())
 	})
 

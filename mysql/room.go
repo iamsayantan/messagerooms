@@ -1,8 +1,15 @@
 package mysql
 
 import (
-	"github.com/iamsayantan/MessageRooms"
+	"errors"
+
+	messagerooms "github.com/iamsayantan/MessageRooms"
 	"github.com/jinzhu/gorm"
+)
+
+var (
+	// ErrRoomNotFound is returned when we don't get the room in our data store.
+	ErrRoomNotFound = errors.New("room not found")
 )
 
 type roomRepository struct {
@@ -14,15 +21,22 @@ func (r *roomRepository) Create(name string, user messagerooms.User) (*messagero
 }
 
 func (r *roomRepository) Find(id string) (*messagerooms.Room, error) {
-	panic("implement me")
+	room := messagerooms.Room{}
+	if notFound := r.db.Preload("CreatedBy").Where("id = ?", id).First(&room).RecordNotFound(); notFound {
+		return nil, ErrRoomNotFound
+	}
+
+	return &room, nil
 }
 
 func (r *roomRepository) AddUserToRoom(room messagerooms.Room, user messagerooms.User) error {
-	panic("implement me")
+	r.db.Model(&room).Association("Users").Find(&user)
+	return nil
 }
 
 func (r *roomRepository) CheckUserExistsInRoom(room messagerooms.Room, user messagerooms.User) bool {
-	panic("implement me")
+	r.db.Model(&room).Association("Users").Find(&user)
+	return true
 }
 
 // NewRoomRepository returns implementation of RoomRepository interface.

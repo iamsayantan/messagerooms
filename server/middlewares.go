@@ -44,11 +44,13 @@ func (am *authMiddleware) Register(next http.Handler) http.Handler {
 
 		if token == "" {
 			render.Render(w, r, ErrUnAuthorized(ErrUnauthorized))
+			return
 		}
 
 		user, err := am.us.VerifyAuthToken(token)
 		if err != nil {
 			render.Render(w, r, ErrUnAuthorized(err))
+			return
 		}
 
 		// set the user in request context.
