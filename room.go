@@ -5,7 +5,7 @@ type Room struct {
 	ID        string `json:"id"`
 	RoomName  string `json:"room_name"`
 	UserID    string `json:"-"`
-	CreatedBy User   `json:"created_by" gorm:"foreignkey:UserID"`
+	CreatedBy *User  `json:"created_by" gorm:"foreignkey:UserID"`
 	Users     []User `json:"users,omitempty" gorm:"many2many:room_users"`
 }
 
