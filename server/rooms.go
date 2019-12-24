@@ -28,39 +28,72 @@ type roomHandler struct {
 func (h *roomHandler) Route() chi.Router {
 	router := chi.NewRouter()
 	router.Get("/{roomID}", h.getRoomDetails)
+	router.Put("/{roomID}/join", h.joinRoom)
 	return router
 }
 
 func (h *roomHandler) getRoomDetails(w http.ResponseWriter, r *http.Request) {
 	roomID := chi.URLParam(r, "roomID")
 	if roomID == "" {
-		render.Render(w, r, ErrInvalidRequest(ErrInvalidRoomID))
+		_ = render.Render(w, r, ErrInvalidRequest(ErrInvalidRoomID))
 		return
 	}
 
 	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
 
 	if !ok {
-		render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
+		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
 		return
 	}
 
-	room, err := h.service.RoomDetails(roomID)
+	roomDetails, err := h.service.RoomDetails(roomID)
 	if err != nil {
-		render.Render(w, r, ErrInvalidRequest(err))
+		_ = render.Render(w, r, ErrInvalidRequest(err))
 		return
 	}
 
-	exists := h.service.CheckUserExistsInRoom(*room, *authUser)
+	exists := h.service.CheckUserExistsInRoom(*roomDetails, *authUser)
 	log.Printf("Exists %v", exists)
 
 	resp := struct {
-		User messagerooms.User `json:"user"`
-		Room messagerooms.Room `json:"room"`
+		Room     messagerooms.Room `json:"roomDetails"`
+		IsMember bool              `json:"is_member"`
 	}{
-		User: *authUser,
-		Room: *room,
+		Room:     *roomDetails,
+		IsMember: h.service.CheckUserExistsInRoom(*roomDetails, *authUser),
 	}
+	sendResponse(w, http.StatusOK, resp)
+}
+
+func (h *roomHandler) joinRoom(w http.ResponseWriter, r *http.Request) {
+	roomID := chi.URLParam(r, "roomID")
+	if roomID == "" {
+		_ = render.Render(w, r, ErrInvalidRequest(ErrInvalidRoomID))
+		return
+	}
+
+	roomDetails, err := h.service.RoomDetails(roomID)
+	if err != nil {
+		_ = render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
+
+	if !ok {
+		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
+		return
+	}
+
+	if err := h.service.AddUserToRoom(*roomDetails, *authUser); err != nil {
+		_ = render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	resp := struct {
+		OK bool `json:"ok"`
+	}{OK: true}
+
 	sendResponse(w, http.StatusOK, resp)
 }
 

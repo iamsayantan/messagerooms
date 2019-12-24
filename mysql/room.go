@@ -2,7 +2,6 @@ package mysql
 
 import (
 	"errors"
-
 	messagerooms "github.com/iamsayantan/MessageRooms"
 	"github.com/jinzhu/gorm"
 )
@@ -10,6 +9,9 @@ import (
 var (
 	// ErrRoomNotFound is returned when we don't get the room in our data store.
 	ErrRoomNotFound = errors.New("room not found")
+
+	// ErrUserAlreadyMember is returned when user tries to join an room he is already part of
+	ErrUserAlreadyMember = errors.New("user is already part of the room")
 )
 
 type roomRepository struct {
@@ -22,7 +24,7 @@ func (r *roomRepository) Create(name string, user messagerooms.User) (*messagero
 
 func (r *roomRepository) Find(id string) (*messagerooms.Room, error) {
 	room := messagerooms.Room{}
-	if notFound := r.db.Preload("CreatedBy").Where("id = ?", id).First(&room).RecordNotFound(); notFound {
+	if notFound := r.db.Preload("CreatedBy").Preload("Users").Where("id = ?", id).First(&room).RecordNotFound(); notFound {
 		return nil, ErrRoomNotFound
 	}
 
@@ -30,13 +32,27 @@ func (r *roomRepository) Find(id string) (*messagerooms.Room, error) {
 }
 
 func (r *roomRepository) AddUserToRoom(room messagerooms.Room, user messagerooms.User) error {
-	r.db.Model(&room).Association("Users").Find(&user)
+	if alreadyExistsInRoom := r.CheckUserExistsInRoom(room, user); alreadyExistsInRoom {
+		return ErrUserAlreadyMember
+	}
+
+	if err := r.db.Model(&room).Association("Users").Append(&user).Error; err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (r *roomRepository) CheckUserExistsInRoom(room messagerooms.Room, user messagerooms.User) bool {
-	r.db.Model(&room).Association("Users").Find(&user)
-	return true
+	var existingUser messagerooms.User
+
+	sql := `
+		SELECT users.id, users.nickname FROM users INNER JOIN room_users ON room_users.user_id = users.id
+		WHERE room_users.user_id = ? AND room_users.room_id = ? LIMIT 1 
+	`
+	r.db.Raw(sql, user.ID, room.ID).Scan(&existingUser)
+
+	return existingUser.ID != ""
 }
 
 // NewRoomRepository returns implementation of RoomRepository interface.
