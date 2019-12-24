@@ -17,7 +17,7 @@ const (
 	defaultDBHost     = "127.0.0.1"
 	defaultDBPort     = "3306"
 	defaultDBUsername = "root"
-	defaultDBPassword = ""
+	defaultDBPassword = "12345"
 	defaultDBName     = "rooms"
 
 	defaultServerPort = "9050"

@@ -27,6 +27,9 @@ type Service interface {
 	// CheckUserExistsInRoom checks if an user is member of a room.
 	CheckUserExistsInRoom(room messagerooms.Room, user messagerooms.User) bool
 
+	// GetAllRoomMessages returns all the messages posted in a room.
+	GetAllRoomMessages(room messagerooms.Message) ([]*messagerooms.Message, error)
+
 	// PostMessage posts a message in a room.
 	PostMessage(room messagerooms.Room, user messagerooms.User, messageText string) (*messagerooms.Message, error)
 }
@@ -34,6 +37,10 @@ type Service interface {
 type roomService struct {
 	room    messagerooms.RoomRepository
 	message messagerooms.MessageRepository
+}
+
+func (s *roomService) GetAllRoomMessages(room messagerooms.Room) ([]*messagerooms.Message, error) {
+	return s.room.GetAllRoomMessages(room)
 }
 
 func (s *roomService) CreateNewRoom(roomName string, user messagerooms.User) (*messagerooms.Room, error) {

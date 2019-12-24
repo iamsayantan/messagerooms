@@ -45,6 +45,12 @@ func (m *messageRepository) GetMessage(messageID string) (*messagerooms.Message,
 	return &msg, nil
 }
 
+func (m *messageRepository) GetAllRoomMessages(room messagerooms.Room) ([]*messagerooms.Message, error) {
+	var msgs []*messagerooms.Message
+	m.db.Preload("CreatedBy").Where("room_id = ?", room.ID).Find(&msgs)
+	return msgs, nil
+}
+
 // NewMessageRepository returns implementation of MessageRepository interface.
 func NewMessageRepository(db *gorm.DB) messagerooms.MessageRepository {
 	return &messageRepository{db: db}
