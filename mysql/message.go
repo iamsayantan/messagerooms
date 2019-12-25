@@ -45,15 +45,9 @@ func (m *messageRepository) GetMessage(messageID string) (*messagerooms.Message,
 	return &msg, nil
 }
 
-func (m *messageRepository) GetAllRoomMessages(room messagerooms.Room) ([]*messagerooms.Message, error) {
-	var msgs []*messagerooms.Message
-	m.db.Preload("CreatedBy").Where("room_id = ?", room.ID).Find(&msgs)
-	return msgs, nil
-}
-
 func (m *messageRepository) GetMessagesByRoom(room messagerooms.Room) ([]*messagerooms.Message, error) {
 	var messages []*messagerooms.Message
-	m.db.Where("room_id = ?", room.ID).Order("created_at DESC").Find(&messages)
+	m.db.Preload("CreatedBy").Where("room_id = ?", room.ID).Order("created_at DESC").Find(&messages)
 	return messages, nil
 }
 

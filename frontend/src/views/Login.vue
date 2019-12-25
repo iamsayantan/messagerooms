@@ -9,11 +9,11 @@
                              To create your own user, see <a href="https://prodocs.cometchat.com/reference#createuser">our documentation</a>   </p>
                           <div class="form-wrapper">
                             <label>Nickname</label>
-                            <input type="text" name="username" id="username" v-model="username" placeholder="Enter your username" class="form-control" required>
+                            <input type="text" name="username" v-model="username" placeholder="Enter your username" class="form-control input" required>
                           </div>
                           <div class="form-wrapper">
                             <label>Password</label>
-                            <input type="password" name="password" id="username" v-model="password" placeholder="Enter your password" class="form-control" required>
+                            <input type="password" name="password" v-model="password" placeholder="Enter your password" class="form-control input" required>
                           </div>
                           <button type="submit">LOG IN &nbsp;&nbsp;<span v-if="showSpinner" class="fa fa-spin fa-spinner"></span> </button>
                       </form>
@@ -30,7 +30,6 @@
 </template>
 
 <script>
-import { postRequest } from '../utils/request'
 import { storeAccessToken, storeUser } from '../utils/auth'
 
 export default {
@@ -43,46 +42,27 @@ export default {
   },
   methods: {
     async login() {
-      this.showSpinner = true
+      this.showSpinner = true;
       const loginPayload = {
         nickname: this.username,
         password: this.password
-      }
+      };
 
       try {
-        const response = await postRequest('http://localhost:9050/user/v1/login', loginPayload)
-        this.$store.commit('authenticate', response)
-        
-        storeAccessToken(response.access_token)
-        storeUser(response.user)
-        
+        const {data} = await this.$http.post('/user/v1/login', loginPayload);
+        this.$store.commit('authenticate', data)
+        storeAccessToken(data.access_token);
+        storeUser(data.user);
+
         this.$router.push({
           name: 'chat'
-        })
-        console.log(response)
+        });
       } catch (e) {
-        console.error(e)
+        console.error('Error Response', e);
       }
-      this.showSpinner = false
-    },
-    // authLoginUser() {
-    //   var apiKey = process.env.VUE_APP_COMMETCHAT_API_KEY;
-    //   this.showSpinner = true;
 
-    //   CometChat.login(this.username, apiKey).then(
-    //     () => {
-    //       this.showSpinner = false;
-    //       this.$router.push({
-    //         name: "chat"
-    //       });
-    //     },
-    //     error => {
-    //       this.showSpinner = false;
-    //       alert("Whops. Something went wrong. This commonly happens when you enter a username that doesn't exist. Check the console for more information")
-    //       console.log("Login failed with error:", error.code);
-    //     }
-    //   );
-    // }
+      this.showSpinner = false;
+    }
   }
 };
 </script>

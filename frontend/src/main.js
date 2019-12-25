@@ -1,4 +1,7 @@
 import Vue from 'vue'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
+
 import App from './App.vue'
 import router from './router'
 import store from './store'
@@ -10,8 +13,14 @@ Vue.config.productionTip = false
 const accessToken = getAccessToken()
 const user = getAuthenticatedUser()
 
-console.log('AccessToken', accessToken)
-console.log('AuthUser', user)
+const axiosInstance = axios.create({
+  baseURL: 'http://localhost:9050/',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+Vue.use(VueAxios, axiosInstance)
 
 if (accessToken && user) {
   store.commit('authenticate', { user, access_token: accessToken })

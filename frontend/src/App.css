@@ -81,7 +81,7 @@ label {
   color: #BFCDD8;
 }
 
-.form-wrapper #username {
+.form-wrapper .input {
   border-bottom: 2px solid #E6ECEE !important;
   border-radius: 0 !important;
   padding-top: 0.375rem;
