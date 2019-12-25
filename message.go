@@ -17,4 +17,5 @@ type Message struct {
 type MessageRepository interface {
 	PostMessage(room Room, user User, messageText string) (*Message, error)
 	GetMessage(messageID string) (*Message, error)
+	GetMessagesByRoom(room Room) ([]*Message, error)
 }

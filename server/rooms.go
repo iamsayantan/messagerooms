@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"log"
 	"net/http"
 
 	messagerooms "github.com/iamsayantan/MessageRooms"
@@ -37,6 +36,7 @@ func (h *roomHandler) Route() chi.Router {
 	router := chi.NewRouter()
 	router.Get("/{roomID}", h.getRoomDetails)
 	router.Put("/{roomID}/join", h.joinRoom)
+	router.Get("/{roomID}/messages", h.getAllMessages)
 	router.Post("/{roomID}/message", h.postMessage)
 	return router
 }
@@ -62,14 +62,13 @@ func (h *roomHandler) getRoomDetails(w http.ResponseWriter, r *http.Request) {
 	}
 
 	exists := h.service.CheckUserExistsInRoom(*roomDetails, *authUser)
-	log.Printf("Exists %v", exists)
 
 	resp := struct {
-		Room     messagerooms.Room `json:"roomDetails"`
+		Room     messagerooms.Room `json:"room_details"`
 		IsMember bool              `json:"is_member"`
 	}{
 		Room:     *roomDetails,
-		IsMember: h.service.CheckUserExistsInRoom(*roomDetails, *authUser),
+		IsMember: exists,
 	}
 	sendResponse(w, http.StatusOK, resp)
 }
@@ -155,6 +154,44 @@ func (h *roomHandler) postMessage(w http.ResponseWriter, r *http.Request) {
 	}{
 		Message: *msg,
 	}
+
+	sendResponse(w, http.StatusOK, resp)
+}
+
+func (h *roomHandler) getAllMessages(w http.ResponseWriter, r *http.Request) {
+	roomID := chi.URLParam(r, "roomID")
+	if roomID == "" {
+		_ = render.Render(w, r, ErrInvalidRequest(ErrInvalidRoomID))
+		return
+	}
+
+	roomDetails, err := h.service.RoomDetails(roomID)
+	if err != nil {
+		_ = render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
+
+	if !ok {
+		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
+		return
+	}
+
+	if exists := h.service.CheckUserExistsInRoom(*roomDetails, *authUser); !exists {
+		_ = render.Render(w, r, ErrInvalidRequest(errors.New("you do not have permission to view messages in the room")))
+		return
+	}
+
+	messages, err := h.service.GetAllRoomMessages(*roomDetails)
+	if err != nil {
+		_ = render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	resp := struct {
+		Messages []*messagerooms.Message `json:"messages"`
+	}{Messages: messages}
 
 	sendResponse(w, http.StatusOK, resp)
 }

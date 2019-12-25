@@ -15,5 +15,4 @@ type RoomRepository interface {
 	Find(id string) (*Room, error)
 	AddUserToRoom(room Room, user User) error
 	CheckUserExistsInRoom(room Room, user User) bool
-	GetAllRoomMessages(room Room) ([]*Message, error)
 }
