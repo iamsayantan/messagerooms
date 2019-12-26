@@ -23,11 +23,11 @@ type Middleware interface {
 type contextKey int
 
 const (
-	// keyAuthUser holds the currently authenticatd user to context.
-	keyAuthUser contextKey = 0
+	// KeyAuthUser holds the currently authenticatd user to context.
+	KeyAuthUser contextKey = 0
 
-	// authorizationHeader is the key from where we extract the authentication token.
-	authorizationHeader = "Authorization"
+	// AuthorizationHeader is the key from where we extract the authentication token.
+	AuthorizationHeader = "Authorization"
 )
 
 // ErrUnauthorized error for authentication failure.
@@ -39,22 +39,22 @@ type authMiddleware struct {
 
 func (am *authMiddleware) Register(next http.Handler) http.Handler {
 	fn := func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get(authorizationHeader)
+		token := r.Header.Get(AuthorizationHeader)
 		ctx := r.Context()
 
 		if token == "" {
-			render.Render(w, r, ErrUnAuthorized(ErrUnauthorized))
+			_ = render.Render(w, r, ErrUnAuthorized(ErrUnauthorized))
 			return
 		}
 
 		user, err := am.us.VerifyAuthToken(token)
 		if err != nil {
-			render.Render(w, r, ErrUnAuthorized(err))
+			_ = render.Render(w, r, ErrUnAuthorized(err))
 			return
 		}
 
 		// set the user in request context.
-		ctx = context.WithValue(ctx, keyAuthUser, user)
+		ctx = context.WithValue(ctx, KeyAuthUser, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
 	return http.HandlerFunc(fn)

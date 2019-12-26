@@ -48,7 +48,7 @@ func (h *roomHandler) getRoomDetails(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
+	authUser, ok := r.Context().Value(KeyAuthUser).(*messagerooms.User)
 
 	if !ok {
 		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
@@ -86,7 +86,7 @@ func (h *roomHandler) joinRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
+	authUser, ok := r.Context().Value(KeyAuthUser).(*messagerooms.User)
 
 	if !ok {
 		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
@@ -136,7 +136,7 @@ func (h *roomHandler) postMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
+	authUser, ok := r.Context().Value(KeyAuthUser).(*messagerooms.User)
 
 	if !ok {
 		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
@@ -171,7 +171,7 @@ func (h *roomHandler) getAllMessages(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	authUser, ok := r.Context().Value(keyAuthUser).(*messagerooms.User)
+	authUser, ok := r.Context().Value(KeyAuthUser).(*messagerooms.User)
 
 	if !ok {
 		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
