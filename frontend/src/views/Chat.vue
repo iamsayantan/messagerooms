@@ -28,10 +28,16 @@
                     <img src="../assets/empty-state.svg" class="img-res" alt="empty chat image">
                   </div>
 
-                  <div>
+                  <div v-if="is_member">
                     <h2> No new message? </h2>
                     <h6 class="empty-chat-sub-title">
                       Send your first message below.
+                    </h6>
+                  </div>
+                  <div v-else>
+                    <h2> You are not a member. </h2>
+                    <h6 class="empty-chat-sub-title">
+                      <a href="#" @click.prevent="joinRoom">Click</a> here to join.
                     </h6>
                   </div>
                 </div>
@@ -67,9 +73,9 @@
           </div>
 
           <div class="msg-bottom">
-            <form class="message-form" v-on:submit.prevent="sendGroupMessage">
+            <form class="message-form" v-on:submit.prevent="postMessage">
               <div class="input-group">
-                <input type="text" class="form-control message-input" placeholder="Type something" v-model="chatMessage"
+                <input type="text" class="form-control message-input" placeholder="Type something" v-model="message_text"
                        required>
                 <spinner
                     v-if="sendingMessage"
@@ -100,7 +106,7 @@
     },
     data() {
       return {
-        selected_room: '2ef9ad51-e369-4dcd-b239-357340633d66', // room id static for now.
+        selected_room: '8d25730b-1f72-40fb-86f1-91bf73320c8b', // room id static for now.
         room_details: {
           id: null,
           room_name: null,
@@ -108,6 +114,7 @@
           users: []
         },
         is_member: false,
+        message_text: null,
         username: "",
         avatar: "",
         uid: "",
@@ -123,49 +130,6 @@
     },
     mounted() {
       this.getRoomDetails()
-      // this.loadingMessages = true
-      // var listenerID = "UNIQUE_LISTENER_ID";
-
-      // const messagesRequest = new CometChat.MessagesRequestBuilder()
-      //   .setLimit(100)
-      //   .build()
-      // messagesRequest.fetchPrevious().then(
-      //   messages => {
-      //     console.log("Message list fetched:", messages);
-      //       console.log("this.groupMessages", this.groupMessages)
-      //       this.groupMessages = [
-      //         ...this.groupMessages,
-      //         ...messages
-      //       ];
-      //       this.loadingMessages = false
-      //       this.$nextTick(() => {
-      //         this.scrollToBottom();
-      //       })
-      //   },
-      //   error => {
-      //     console.log("Message fetching failed with error:", error);
-      //   }
-      // );
-
-      // CometChat.addMessageListener(
-      //   listenerID,
-      //   new CometChat.MessageListener({
-      //     onTextMessageReceived: textMessage => {
-      //       console.log("Text message received successfully", textMessage);
-      //       // Handle text message
-      //       console.log(this.groupMessages)
-      //       this.groupMessages = [
-      //         ...this.groupMessages,
-      //         textMessage
-      //       ];
-      //       // console.log("avatar", textMessage.sender.avatar)
-      //       this.loadingMessages = false
-      //       this.$nextTick(() => {
-      //         this.scrollToBottom();
-      //       })
-      //     }
-      //   })
-      // );
     },
 
     created() {
@@ -190,7 +154,24 @@
             this.fetchRoomMessages()
           }
         } catch (e) {
-          console.error(e``)
+          console.error(e)
+        }
+      },
+
+      async joinRoom() {
+        if (this.is_member) return;
+        try {
+          const {data} = await this.$http.put(`rooms/v1/${this.selected_room}/join`, null, {
+            headers: {
+              'Authorization': this.auth.accessToken
+            }
+          });
+
+          console.log('JOIN', data)
+
+          this.fetchRoomMessages()
+        } catch (e) {
+          console.error(e)
         }
       },
 
@@ -199,69 +180,56 @@
           return
         }
 
+        this.loadingMessages = true;
         try {
           const {data} = await this.$http.get(`rooms/v1/${this.selected_room}/messages`, {
             headers: {
               'Authorization': this.auth.accessToken
             }
           });
-          this.groupMessages = data.messages.reverse()
+          this.groupMessages = data.messages.reverse();
+          this.$nextTick(() => {
+            this.scrollToBottom()
+          });
         } catch (e) {
           console.error(e)
         }
+
+        this.loadingMessages = false;
       },
-      getLoggedInUser() {
-        CometChat.getLoggedinUser().then(
-          user => {
-            this.username = user.name;
-            this.avatar = user.avatar;
-            this.uid = user.uid;
-          },
-          error => {
-            this.$router.push({
-              name: "homepage"
-            });
-            console.log(error);
-          }
-        );
+
+      async postMessage() {
+        if (!this.message_text) return;
+
+        this.sendingMessage = true;
+
+        const messagePayload = {
+          message_text: this.message_text
+        };
+
+        try {
+          const {data} = await this.$http.post(`rooms/v1/${this.selected_room}/messages`, messagePayload, {
+            headers: {
+              'Authorization': this.auth.accessToken
+            }
+          });
+          this.groupMessages = [...this.groupMessages, data.message];
+          this.$nextTick(() => {
+            this.scrollToBottom()
+          });
+
+          this.message_text = null;
+        } catch (e) {
+          console.error(e)
+        }
+
+        this.sendingMessage = false
       },
 
       scrollToBottom() {
         const chat = document.getElementById("msg-page");
         chat.scrollTo(0, chat.scrollHeight + 30);
       },
-
-      sendGroupMessage() {
-        this.sendingMessage = true;
-        var receiverID = process.env.VUE_APP_COMMETCHAT_GUID;
-        var messageText = this.chatMessage;
-        var messageType = CometChat.MESSAGE_TYPE.TEXT;
-        var receiverType = CometChat.RECEIVER_TYPE.GROUP;
-        let globalContext = this;
-
-        var textMessage = new CometChat.TextMessage(
-          receiverID,
-          messageText,
-          messageType,
-          receiverType
-        );
-
-        CometChat.sendMessage(textMessage).then(
-          message => {
-            console.log("Message sent successfully:", message);
-            this.chatMessage = "";
-            this.sendingMessage = false;
-            // Text Message Sent Successfully
-            this.groupMessages = [...globalContext.groupMessages, message];
-            this.$nextTick(() => {
-              this.scrollToBottom()
-            })
-          },
-          error => {
-            console.log("Message sending failed with error:", error);
-          }
-        );
-      }
     }
   };
 </script>

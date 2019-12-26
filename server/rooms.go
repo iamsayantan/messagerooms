@@ -37,7 +37,7 @@ func (h *roomHandler) Route() chi.Router {
 	router.Get("/{roomID}", h.getRoomDetails)
 	router.Put("/{roomID}/join", h.joinRoom)
 	router.Get("/{roomID}/messages", h.getAllMessages)
-	router.Post("/{roomID}/message", h.postMessage)
+	router.Post("/{roomID}/messages", h.postMessage)
 	return router
 }
 
