@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/go-chi/render"
 	messagerooms "github.com/iamsayantan/MessageRooms"
 )
 
 type SSEHub struct {
+	mu              sync.Mutex
 	NewConnection   chan messagerooms.EventsourceConnection       // NewConnection is the channel for any new client connection
 	CloseConnection chan messagerooms.EventsourceConnection       // CloseConnection is channel for any closing connection
 	OpenConnections map[string]messagerooms.EventsourceConnection // OpenConnections holds all the active open connections to the server
@@ -75,7 +77,9 @@ func (s *SSEHub) Listen() {
 		for {
 			select {
 			case sseConn := <-s.NewConnection:
+				s.mu.Lock()
 				s.OpenConnections[sseConn.ConnectionID] = sseConn
+				s.mu.Unlock()
 
 				// send an initial event with the connection id
 				msg := messagerooms.EventMessage{Event: messagerooms.ConnectionEvent, DestinationID: sseConn.ConnectionID, Data: fmt.Sprintf("connectionID: %s", sseConn.ConnectionID)}
@@ -84,8 +88,11 @@ func (s *SSEHub) Listen() {
 
 				log.Printf("New client connected. ConnectionID: %s Number of registered clients %d", sseConn.ConnectionID, len(s.OpenConnections))
 			case sseConn := <-s.CloseConnection:
-				sseConn.Closing()
+				s.mu.Lock()
 				delete(s.OpenConnections, sseConn.ConnectionID)
+				s.mu.Unlock()
+
+				sseConn.Closing()
 				log.Printf("Removed client. ConnectionID %s Number of registered clients %d", sseConn.ConnectionID, len(s.OpenConnections))
 			}
 		}
