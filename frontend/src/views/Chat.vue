@@ -92,8 +92,10 @@
 </template>
 
 <script>
-  // @ is an alias to /src
-  import {CometChat} from "@cometchat-pro/chat";
+  import { EventSourcePolyfill } from 'event-source-polyfill'
+
+  import configureEventSource from '../eventsource'
+
   import NavBar from "../components/NavBar.vue";
   import Spinner from "../components/Spinner.vue";
   import {mapGetters} from 'vuex'
@@ -130,6 +132,11 @@
     },
     mounted() {
       this.getRoomDetails()
+
+      // connect to sse endpoint when authenticated
+      if (this.auth.accessToken) {
+        configureEventSource('//localhost:9050/sse/connect');
+      }
     },
 
     created() {

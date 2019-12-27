@@ -26,6 +26,7 @@ type Server struct {
 	User user.Service
 	Room room.Service
 
+	Hub    *SSEHub
 	router chi.Router
 }
 
@@ -34,14 +35,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewServer returns a new HTTP server.
-func NewServer(us user.Service, rs room.Service) *Server {
+func NewServer(us user.Service, rs room.Service, hub *SSEHub) *Server {
 	s := &Server{
 		User: us,
 		Room: rs,
+		Hub:  hub,
 	}
 
 	validate := validator.New()
-	cors := cors.New(cors.Options{
+	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
@@ -50,7 +52,7 @@ func NewServer(us user.Service, rs room.Service) *Server {
 
 	r := chi.NewRouter()
 	r.Use(chiware.AllowContentType("application/json"))
-	r.Use(cors.Handler)
+	r.Use(corsHandler.Handler)
 
 	r.Method("GET", "/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		response := struct {
@@ -61,6 +63,12 @@ func NewServer(us user.Service, rs room.Service) *Server {
 			_, _ = w.Write([]byte(err.Error()))
 		}
 	}))
+
+	r.Route("/sse", func(r chi.Router) {
+		// Authentication middleware
+		r.Use(am.Register)
+		r.Get("/connect", http.HandlerFunc(s.Hub.HandleSSE))
+	})
 
 	r.Route("/user", func(r chi.Router) {
 		h := NewUserHandler(us, validate)

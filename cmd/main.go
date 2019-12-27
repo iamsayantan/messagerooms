@@ -61,6 +61,9 @@ func main() {
 	userService = user.NewService(userRepo)
 	roomService = room.NewService(roomRepo, messageRepo)
 
-	srv := server.NewServer(userService, roomService)
+	hub := server.NewSSEHub()
+	srv := server.NewServer(userService, roomService, hub)
+
+	hub.Listen()
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", defaultServerPort), srv))
 }
