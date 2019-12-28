@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/go-chi/render"
 	messagerooms "github.com/iamsayantan/MessageRooms"
@@ -82,7 +83,15 @@ func (s *SSEHub) Listen() {
 				s.mu.Unlock()
 
 				// send an initial event with the connection id
-				msg := messagerooms.EventMessage{Event: messagerooms.ConnectionEvent, DestinationID: sseConn.ConnectionID, Data: fmt.Sprintf("connectionID: %s", sseConn.ConnectionID)}
+				connectionEvt := struct {
+					ConnectionID string `json:"connection_id"`
+					ServerTime   int64  `json:"server_time"`
+				}{
+					ConnectionID: sseConn.ConnectionID,
+					ServerTime:   time.Now().Unix(),
+				}
+
+				msg := messagerooms.EventMessage{Event: messagerooms.ConnectionEvent, DestinationID: sseConn.ConnectionID, Data: connectionEvt}
 				sseConn.PublishEvent(msg)
 				sseConn.Heartbeat()
 

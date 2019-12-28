@@ -2,6 +2,7 @@ package messagerooms
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -46,7 +47,12 @@ func (ec *EventsourceConnection) Heartbeat() {
 				ec.ticker.Stop()
 				return
 			case <-ec.ticker.C:
-				msg := EventMessage{Event: HeartbeatEvent, DestinationID: ec.ConnectionID, Data: "Heartbeat"}
+				data := struct {
+					Heartbeat  string `json:"heartbeat"`
+					ServerTime int64  `json:"server_time"`
+				}{Heartbeat: "OK", ServerTime: time.Now().Unix()}
+
+				msg := EventMessage{Event: HeartbeatEvent, DestinationID: ec.ConnectionID, Data: data}
 				ec.PublishEvent(msg)
 			}
 		}
@@ -57,7 +63,7 @@ func (ec *EventsourceConnection) Heartbeat() {
 type EventMessage struct {
 	Event         ServerEvent // Event is the name of the event.
 	DestinationID string      `json:"destination_id"` // ConnectionID of the EventsourceConnection where this message should be delivered
-	Data          string      `json:"data"`           // Data is what we send in the response
+	Data          interface{} `json:"data"`           // Data is what we send in the response
 }
 
 // String converts the event to a string eligible for publishing to SSE connection.
@@ -72,8 +78,15 @@ func (evt *EventMessage) String() string {
 		buff.WriteString(fmt.Sprintf("event: %s\n", evt.Event))
 	}
 
-	if len(evt.Data) > 0 {
-		buff.WriteString(fmt.Sprintf("data: %s\n", evt.Data))
+	byts, err := json.Marshal(evt.Data)
+	if err != nil {
+		byts = []byte("Not a valid JSON")
+	}
+
+	data := string(byts)
+
+	if len(data) > 0 {
+		buff.WriteString(fmt.Sprintf("data: %s\n", data))
 	}
 
 	buff.WriteString("\n")
