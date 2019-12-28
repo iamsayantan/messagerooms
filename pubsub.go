@@ -12,10 +12,19 @@ import (
 // ServerEvent is type for any SSE events
 type ServerEvent string
 
+// HubChannel is the main channel where any hub related events should be published. It is upto the hub then to
+// decide what to do with the events.
+const HubChannel = "HubChannel"
+
 var (
 	ConnectionEvent ServerEvent = "ClientConnection"
 	HeartbeatEvent  ServerEvent = "Heartbeat"
+	MessageEvent    ServerEvent = "MessageEvent"
 )
+
+type PubsubHandler interface {
+	Publish(topic string, payload interface{})
+}
 
 // EventsourceConnection represents a single persistent connection.
 type EventsourceConnection struct {
@@ -25,6 +34,13 @@ type EventsourceConnection struct {
 
 	ticker  *time.Ticker // ticker is used for sending heartbeats to the client
 	closing chan bool    // closing channel receives data if the client closes
+}
+
+// PublishEvent is the container for publishing events.
+type PublishEvent struct {
+	Topic     string      `json:"topic"`      // Topic of the event.
+	CreatedAt int64       `json:"created_at"` // CreatedAt when the event was created. Can be used to track how much time it takes form creation to delivery.
+	Payload   interface{} `json:"payload"`    // Payload actual payload for the event.
 }
 
 // PublishEvent publishes an event to connection's SendChannel
@@ -57,6 +73,15 @@ func (ec *EventsourceConnection) Heartbeat() {
 			}
 		}
 	}()
+}
+
+// ToJSON converts the PublishEvent to a JSON.
+func (pe *PublishEvent) ToJSON() (string, error) {
+	byts, err := json.Marshal(pe)
+	if err != nil {
+		return "", err
+	}
+	return string(byts), nil
 }
 
 // EventMessage represents a single SSE Event.
@@ -107,4 +132,13 @@ func NewEventsourceConnection(user *User) *EventsourceConnection {
 		closing:      closingChan,
 	}
 	return eventsourceConnection
+}
+
+// NewPublishEvent returns a new PublishEvent
+func NewPublishEvent(topic string, payload interface{}) *PublishEvent {
+	return &PublishEvent{
+		Topic:     topic,
+		CreatedAt: time.Now().UnixNano(),
+		Payload:   payload,
+	}
 }

@@ -9,14 +9,18 @@ import (
 	"time"
 
 	"github.com/go-chi/render"
+	"github.com/gomodule/redigo/redis"
 	messagerooms "github.com/iamsayantan/MessageRooms"
 )
 
+// SSEHub maintains persistent eventsource connection to server.
 type SSEHub struct {
 	mu              sync.Mutex
 	NewConnection   chan messagerooms.EventsourceConnection       // NewConnection is the channel for any new client connection
 	CloseConnection chan messagerooms.EventsourceConnection       // CloseConnection is channel for any closing connection
 	OpenConnections map[string]messagerooms.EventsourceConnection // OpenConnections holds all the active open connections to the server
+
+	pubsubConn *redis.PubSubConn
 }
 
 // HandleSSE handles incoming persistent connection.
@@ -108,12 +112,41 @@ func (s *SSEHub) Listen() {
 	}()
 }
 
+// ReceiveHubEvents spawns a goroutine which listens
+func (s *SSEHub) ReceiveHubEvents() {
+	go func() {
+		for {
+			switch v := s.pubsubConn.Receive().(type) {
+			case redis.Message:
+				log.Printf("[Redis Message] Channel: %s, Message: %s\n", v.Channel, string(v.Data))
+			case redis.Subscription:
+				log.Printf("[Redis Subscription] Channel: %s, Kind: %s, Count: %d\n", v.Channel, v.Kind, v.Count)
+			case error:
+				log.Printf("Error pub/sub on connection, delivery has stopped %s\n", v.Error())
+				return
+			}
+		}
+	}()
+}
+
 // NewSSEHub returns a new hub instance.
-func NewSSEHub() *SSEHub {
-	sseHub := SSEHub{
+func NewSSEHub(conn *redis.PubSubConn) *SSEHub {
+	sseHub := &SSEHub{
 		NewConnection:   make(chan messagerooms.EventsourceConnection),
 		CloseConnection: make(chan messagerooms.EventsourceConnection),
 		OpenConnections: make(map[string]messagerooms.EventsourceConnection),
+		pubsubConn:      conn,
 	}
-	return &sseHub
+
+	// subscribe to the hub channel.
+	err := sseHub.pubsubConn.Subscribe(messagerooms.HubChannel)
+	if err != nil {
+		log.Printf("Could not connect to the hub: %s", err.Error())
+		panic(err)
+	}
+
+	sseHub.Listen()
+	sseHub.ReceiveHubEvents()
+
+	return sseHub
 }

@@ -2,6 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/gomodule/redigo/redis"
 	messagerooms "github.com/iamsayantan/MessageRooms"
 	"github.com/iamsayantan/MessageRooms/mysql"
 	"github.com/iamsayantan/MessageRooms/room"
@@ -9,8 +13,6 @@ import (
 	"github.com/iamsayantan/MessageRooms/user"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
-	"log"
-	"net/http"
 )
 
 const (
@@ -37,13 +39,17 @@ func main() {
 
 	defer db.Close()
 
-	db.LogMode(true)
-
 	// Automatically migrate the schemas.
 	db.AutoMigrate(&messagerooms.User{}, &messagerooms.Room{}, &messagerooms.Message{})
 
 	// initialize application dependencies
 	var (
+		// Pubsub related initialization
+		pubsubConn *redis.PubSubConn
+		redisConn  = func() (redis.Conn, error) {
+			return redis.Dial("tcp", ":6379")
+		}
+
 		// Repositories
 		userRepo    messagerooms.UserRepository
 		roomRepo    messagerooms.RoomRepository
@@ -61,9 +67,15 @@ func main() {
 	userService = user.NewService(userRepo)
 	roomService = room.NewService(roomRepo, messageRepo)
 
-	hub := server.NewSSEHub()
+	rConn, err := redisConn()
+	if err != nil {
+		panic(err)
+	}
+
+	pubsubConn = &redis.PubSubConn{Conn: rConn}
+
+	hub := server.NewSSEHub(pubsubConn)
 	srv := server.NewServer(userService, roomService, hub)
 
-	hub.Listen()
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", defaultServerPort), srv))
 }
