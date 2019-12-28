@@ -33,7 +33,6 @@ func (ec *EventsourceConnection) PublishEvent(evt EventMessage) {
 
 // Closing is for housekeeping works.
 func (ec *EventsourceConnection) Closing() {
-	close(ec.SendCh)
 	ec.closing <- true
 }
 
