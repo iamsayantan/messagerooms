@@ -92,8 +92,6 @@
 </template>
 
 <script>
-  import { EventSourcePolyfill } from 'event-source-polyfill'
-
   import configureEventSource from '../eventsource'
 
   import NavBar from "../components/NavBar.vue";
@@ -117,12 +115,7 @@
         },
         is_member: false,
         message_text: null,
-        username: "",
-        avatar: "",
-        uid: "",
         sendingMessage: false,
-        chatMessage: "",
-        loggingOut: false,
         groupMessages: [],
         loadingMessages: false
       };
