@@ -22,8 +22,13 @@ var (
 	MessageEvent    ServerEvent = "MessageEvent"
 )
 
-type PubsubHandler interface {
-	Publish(topic string, payload interface{})
+// Publishable is the interface that all types must implement that wish to be published into the pubsub system.
+type Publishable interface {
+	// GetTopic returns an topic identifier
+	GetTopic() string
+
+	// ToPublish() method returns an PublishEvent that can be then pushed into the redis pubsub to be broadcast.
+	ToPublish() *PublishEvent
 }
 
 // EventsourceConnection represents a single persistent connection.

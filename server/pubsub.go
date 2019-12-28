@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -118,6 +119,14 @@ func (s *SSEHub) ReceiveHubEvents() {
 		for {
 			switch v := s.pubsubConn.Receive().(type) {
 			case redis.Message:
+				// We expect that data should be of type PublishEvent. Otherwise its an error and we don't process it.
+				payload := v.Data
+				var eventMessage *messagerooms.PublishEvent
+				if err := json.Unmarshal(payload, &eventMessage); err != nil {
+					log.Printf("Invalid Event Received")
+					break
+				}
+
 				log.Printf("[Redis Message] Channel: %s, Message: %s\n", v.Channel, string(v.Data))
 			case redis.Subscription:
 				log.Printf("[Redis Subscription] Channel: %s, Kind: %s, Count: %d\n", v.Channel, v.Kind, v.Count)
