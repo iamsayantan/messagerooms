@@ -127,6 +127,7 @@ func (s *SSEHub) ReceiveHubEvents() {
 					break
 				}
 
+				s.PublishToAllClients(eventMessage)
 				log.Printf("[Redis Message] Channel: %s, Message: %s\n", v.Channel, string(v.Data))
 			case redis.Subscription:
 				log.Printf("[Redis Subscription] Channel: %s, Kind: %s, Count: %d\n", v.Channel, v.Kind, v.Count)
@@ -136,6 +137,19 @@ func (s *SSEHub) ReceiveHubEvents() {
 			}
 		}
 	}()
+}
+
+// PublishToAllClients publishes any incoming event to all connected clients
+func (s *SSEHub) PublishToAllClients(msg *messagerooms.PublishEvent) {
+	for _, client := range s.OpenConnections {
+		event := messagerooms.EventMessage{
+			Event:         messagerooms.MessageEvent,
+			DestinationID: client.ConnectionID,
+			Data:          msg,
+		}
+
+		client.PublishEvent(event)
+	}
 }
 
 // NewSSEHub returns a new hub instance.

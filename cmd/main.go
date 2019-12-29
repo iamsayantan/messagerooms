@@ -67,11 +67,13 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer rSubConn.Close()
 
 	rPubConn, err := redisConn()
 	if err != nil {
 		panic(err)
 	}
+	defer rPubConn.Close()
 
 	userRepo = mysql.NewUserRepository(db)
 	roomRepo = mysql.NewRoomRepository(db)
