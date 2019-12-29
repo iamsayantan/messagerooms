@@ -13,6 +13,14 @@ type Message struct {
 	RoomDetails *Room     `json:"room_details,omitempty" gorm:"foreignkey:RoomID"`
 }
 
+func (m Message) GetTopic() string {
+	return TopicMessageRoom + ":" + m.RoomID
+}
+
+func (m Message) ToPublish() *PublishEvent {
+	return NewPublishEvent(m.GetTopic(), m)
+}
+
 // MessageRepository provides interface to access message storage.
 type MessageRepository interface {
 	PostMessage(room Room, user User, messageText string) (*Message, error)

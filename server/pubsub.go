@@ -63,15 +63,15 @@ func (s *SSEHub) HandleSSE(w http.ResponseWriter, r *http.Request) {
 	// If the client closes the connection, we receive that in ctx.Done() channel for which we need to listen
 	// and inform the hub about the event.
 	go func() {
-		log.Printf("Connection closed by client: %s", eventSourceConn.ConnectionID)
 		<-ctx.Done()
 		s.CloseConnection <- *eventSourceConn
+		log.Printf("Connection closed by client: %s", eventSourceConn.ConnectionID)
 	}()
 
 	// block waiting for messages broadcast on this connection's SendCh
 	for {
 		evt := <-eventSourceConn.SendCh
-		log.Printf("Got event for connectionID: %s Event:\n%s", evt.DestinationID, evt.String())
+		//log.Printf("Got event for connectionID: %s Event:\n%s", evt.DestinationID, evt.String())
 		_, _ = fmt.Fprintf(w, evt.String())
 		flusher.Flush()
 	}

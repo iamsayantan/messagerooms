@@ -16,6 +16,10 @@ type ServerEvent string
 // decide what to do with the events.
 const HubChannel = "HubChannel"
 
+const (
+	TopicMessageRoom = "room"
+)
+
 var (
 	ConnectionEvent ServerEvent = "ClientConnection"
 	HeartbeatEvent  ServerEvent = "Heartbeat"
@@ -24,7 +28,7 @@ var (
 
 // Publishable is the interface that all types must implement that wish to be published into the pubsub system.
 type Publishable interface {
-	// GetTopic returns an topic identifier
+	// GetTopic returns an topic identifier for a model
 	GetTopic() string
 
 	// ToPublish() method returns an PublishEvent that can be then pushed into the redis pubsub to be broadcast.

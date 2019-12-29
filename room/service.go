@@ -2,6 +2,7 @@ package room
 
 import (
 	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/messagerooms/pubsub"
 	"github.com/pkg/errors"
 )
 
@@ -35,8 +36,9 @@ type Service interface {
 }
 
 type roomService struct {
-	room    messagerooms.RoomRepository
-	message messagerooms.MessageRepository
+	room      messagerooms.RoomRepository
+	message   messagerooms.MessageRepository
+	publisher pubsub.Service
 }
 
 func (s *roomService) GetAllRoomMessages(room messagerooms.Room) ([]*messagerooms.Message, error) {
@@ -84,14 +86,20 @@ func (s *roomService) PostMessage(room messagerooms.Room, user messagerooms.User
 		return nil, err
 	}
 
+	// publishing the new message into the pubsub system.
+	go func() {
+		s.publisher.Publish(message)
+	}()
+
 	return message, nil
 }
 
 // NewService returns a new room service with associated dependency.
-func NewService(rs messagerooms.RoomRepository, ms messagerooms.MessageRepository) Service {
+func NewService(rs messagerooms.RoomRepository, ms messagerooms.MessageRepository, pub pubsub.Service) Service {
 	service := &roomService{
-		room:    rs,
-		message: ms,
+		room:      rs,
+		message:   ms,
+		publisher: pub,
 	}
 
 	return service

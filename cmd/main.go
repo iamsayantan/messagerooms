@@ -11,6 +11,7 @@ import (
 	"github.com/iamsayantan/MessageRooms/room"
 	"github.com/iamsayantan/MessageRooms/server"
 	"github.com/iamsayantan/MessageRooms/user"
+	"github.com/iamsayantan/messagerooms/pubsub"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -56,23 +57,31 @@ func main() {
 		messageRepo messagerooms.MessageRepository
 
 		// Services
-		userService user.Service
-		roomService room.Service
+		userService   user.Service
+		roomService   room.Service
+		pubsubService pubsub.Service
 	)
+
+	// can not use same underlying connection instance for publishing and subscribing.
+	rSubConn, err := redisConn()
+	if err != nil {
+		panic(err)
+	}
+
+	rPubConn, err := redisConn()
+	if err != nil {
+		panic(err)
+	}
 
 	userRepo = mysql.NewUserRepository(db)
 	roomRepo = mysql.NewRoomRepository(db)
 	messageRepo = mysql.NewMessageRepository(db)
 
+	pubsubService = pubsub.NewRedisPubsubService(rPubConn)
 	userService = user.NewService(userRepo)
-	roomService = room.NewService(roomRepo, messageRepo)
+	roomService = room.NewService(roomRepo, messageRepo, pubsubService)
 
-	rConn, err := redisConn()
-	if err != nil {
-		panic(err)
-	}
-
-	pubsubConn = &redis.PubSubConn{Conn: rConn}
+	pubsubConn = &redis.PubSubConn{Conn: rSubConn}
 
 	hub := server.NewSSEHub(pubsubConn)
 	srv := server.NewServer(userService, roomService, hub)

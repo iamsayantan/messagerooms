@@ -2,7 +2,7 @@ package pubsub
 
 import (
 	"github.com/gomodule/redigo/redis"
-	"github.com/iamsayantan/messagerooms"
+	messagerooms "github.com/iamsayantan/MessageRooms"
 )
 
 // Service interface defines methods for interacting with the pubsub system.
