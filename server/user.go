@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	messagerooms "github.com/iamsayantan/MessageRooms"
-	"github.com/iamsayantan/MessageRooms/user"
+	"github.com/iamsayantan/messagerooms"
+	"github.com/iamsayantan/messagerooms/user"
 
 	"gopkg.in/go-playground/validator.v10"
 

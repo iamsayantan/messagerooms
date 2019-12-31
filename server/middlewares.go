@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/render"
 
-	"github.com/iamsayantan/MessageRooms/user"
+	"github.com/iamsayantan/messagerooms/user"
 )
 
 // Middleware provides generic interface for registering different middlewares.

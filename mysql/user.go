@@ -3,7 +3,7 @@ package mysql
 import (
 	"errors"
 
-	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/messagerooms"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )

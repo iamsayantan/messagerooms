@@ -6,7 +6,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/messagerooms"
 )
 
 // JwtSigningSecret used for signing and verifying jwt tokens.

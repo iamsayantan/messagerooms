@@ -1,7 +1,7 @@
 package room
 
 import (
-	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/messagerooms"
 	"github.com/iamsayantan/messagerooms/pubsub"
 	"github.com/pkg/errors"
 )

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"net/http"
 
-	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/messagerooms"
 
 	"github.com/go-chi/render"
 
 	"github.com/go-chi/chi"
 
-	"github.com/iamsayantan/MessageRooms/room"
+	"github.com/iamsayantan/messagerooms/room"
 	"gopkg.in/go-playground/validator.v10"
 )
 

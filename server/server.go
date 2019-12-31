@@ -14,8 +14,8 @@ import (
 	"github.com/go-chi/chi"
 	chiware "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
-	"github.com/iamsayantan/MessageRooms/room"
-	"github.com/iamsayantan/MessageRooms/user"
+	"github.com/iamsayantan/messagerooms/room"
+	"github.com/iamsayantan/messagerooms/user"
 )
 
 // maximum bytes allowed in request body. 1MB

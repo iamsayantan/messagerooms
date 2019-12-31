@@ -106,7 +106,7 @@
     },
     data() {
       return {
-        selected_room: '2ef9ad51-e369-4dcd-b239-357340633d66', // room id static for now.
+        selected_room: '8d25730b-1f72-40fb-86f1-91bf73320c8b', // room id static for now.
         room_details: {
           id: null,
           room_name: null,

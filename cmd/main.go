@@ -6,12 +6,12 @@ import (
 	"net/http"
 
 	"github.com/gomodule/redigo/redis"
-	messagerooms "github.com/iamsayantan/MessageRooms"
-	"github.com/iamsayantan/MessageRooms/mysql"
-	"github.com/iamsayantan/MessageRooms/room"
-	"github.com/iamsayantan/MessageRooms/server"
-	"github.com/iamsayantan/MessageRooms/user"
+	"github.com/iamsayantan/messagerooms"
+	"github.com/iamsayantan/messagerooms/mysql"
 	"github.com/iamsayantan/messagerooms/pubsub"
+	"github.com/iamsayantan/messagerooms/room"
+	"github.com/iamsayantan/messagerooms/server"
+	"github.com/iamsayantan/messagerooms/user"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 )
@@ -20,7 +20,7 @@ const (
 	defaultDBHost     = "127.0.0.1"
 	defaultDBPort     = "3306"
 	defaultDBUsername = "root"
-	defaultDBPassword = ""
+	defaultDBPassword = "12345"
 	defaultDBName     = "rooms"
 
 	defaultServerPort = "9050"

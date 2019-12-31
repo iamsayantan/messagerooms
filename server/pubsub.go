@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-chi/render"
 	"github.com/gomodule/redigo/redis"
-	messagerooms "github.com/iamsayantan/MessageRooms"
+	"github.com/iamsayantan/messagerooms"
 )
 
 // SSEHub maintains persistent eventsource connection to server.
