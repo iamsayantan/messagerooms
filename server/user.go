@@ -20,15 +20,20 @@ type authRequest struct {
 }
 
 type userHandler struct {
-	service  user.Service
-	validate *validator.Validate
+	authMiddleware Middleware
+	service        user.Service
+	validate       *validator.Validate
 }
 
 func (h *userHandler) Route() chi.Router {
 	r := chi.NewRouter()
 	r.Post("/login", h.login)
 	r.Post("/register", h.register)
-	r.Get("/me", h.me)
+
+	r.Group(func(r chi.Router) {
+		r.Use(h.authMiddleware.Register)
+		r.Get("/me", h.me)
+	})
 
 	return r
 }
@@ -103,7 +108,7 @@ func (h *userHandler) me(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewUserHandler returns new user handler.
-func NewUserHandler(s user.Service, v *validator.Validate) WebHandler {
-	h := &userHandler{service: s, validate: v}
+func NewUserHandler(s user.Service, v *validator.Validate, am Middleware) WebHandler {
+	h := &userHandler{service: s, validate: v, authMiddleware: am}
 	return h
 }

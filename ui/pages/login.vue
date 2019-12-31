@@ -50,6 +50,10 @@
             password: this.login.password
           }
         })
+          .catch(e => {
+            console.error(e)
+            this.loading = false
+          })
       }
     }
 

@@ -80,14 +80,14 @@ module.exports = {
           logout: { url: '/user/v1/logout', method: 'post' },
           user: { url: '/user/v1/me', method: 'get', propertyName: 'user' }
         },
-        tokenRequired: false,
+        tokenRequired: true,
         tokenType: ''
       }
     },
     redirect: {
       login: '/login',
       logout: '/',
-      home: '/'
+      home: '/chat/messaging'
     }
   },
 

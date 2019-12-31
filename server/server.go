@@ -71,7 +71,7 @@ func NewServer(us user.Service, rs room.Service, hub *SSEHub) *Server {
 	})
 
 	r.Route("/user", func(r chi.Router) {
-		h := NewUserHandler(us, validate)
+		h := NewUserHandler(us, validate, am)
 		r.Mount("/v1", h.Route())
 	})
 
@@ -181,7 +181,7 @@ func ErrUnAuthorized(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: http.StatusUnauthorized,
-		StatusText:     "Athentication Required",
+		StatusText:     "Authentication Required",
 		ErrorText:      err.Error(),
 	}
 }
