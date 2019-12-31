@@ -8,27 +8,18 @@
               <v-card-text>
                 <div class="layout column align-center">
                   <img src="../static/m.png" alt="Vue Material Admin" width="120" height="120">
-                  <h1 class="flex my-4 primary--text">Material Admin Template</h1>
+                  <h1 class="flex my-4 primary--text">Messagerooms</h1>
                 </div>
                 <v-form>
-                  <v-text-field append-icon="person" name="login" label="Login" type="text"
-                                v-model="model.username"></v-text-field>
+                  <v-text-field append-icon="person" name="nickname" label="Nickname" type="text"
+                                v-model="login.nickname"></v-text-field>
                   <v-text-field append-icon="lock" name="password" label="Password" id="password" type="password"
-                                v-model="model.password"></v-text-field>
+                                v-model="login.password"></v-text-field>
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn icon>
-                  <v-icon color="blue">fa fa-facebook-square fa-lg</v-icon>
-                </v-btn>
-                <v-btn icon>
-                  <v-icon color="red">fa fa-google fa-lg</v-icon>
-                </v-btn>
-                <v-btn icon>
-                  <v-icon color="light-blue">fa fa-twitter fa-lg</v-icon>
-                </v-btn>
                 <v-spacer></v-spacer>
-                <v-btn block color="primary" @click="login" :loading="loading">Login</v-btn>
+                <v-btn block color="primary" @click="doLogin" :loading="loading">Login</v-btn>
               </v-card-actions>
             </v-card>
           </v-flex>
@@ -43,18 +34,22 @@
     layout: 'default',
     data: () => ({
       loading: false,
-      model: {
-        username: 'admin@example.com',
-        password: 'password'
+      login: {
+        nickname: null,
+        password: null
       }
     }),
 
     methods: {
-      login() {
+      doLogin() {
         this.loading = true;
-        setTimeout(() => {
-          this.$router.push('/dashboard');
-        }, 1000);
+
+        this.$auth.loginWith('local', {
+          data: {
+            nickname: this.login.nickname,
+            password: this.login.password
+          }
+        })
       }
     }
 

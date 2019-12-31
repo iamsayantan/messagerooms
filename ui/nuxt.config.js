@@ -1,5 +1,5 @@
 const pkg = require('./package')
-
+require('dotenv').config()
 
 const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin')
 
@@ -58,7 +58,38 @@ module.exports = {
   /*
   ** Nuxt.js modules
   */
-  modules: [],
+  modules: [
+    '@nuxtjs/dotenv',
+    '@nuxtjs/axios',
+    '@nuxtjs/auth'
+  ],
+
+  axios: {
+
+  },
+
+  router: {
+    middleware: ['auth']
+  },
+
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: { url: '/user/v1/login', method: 'post', propertyName: 'access_token' },
+          logout: { url: '/user/v1/logout', method: 'post' },
+          user: { url: '/user/v1/me', method: 'get', propertyName: 'user' }
+        },
+        tokenRequired: false,
+        tokenType: ''
+      }
+    },
+    redirect: {
+      login: '/login',
+      logout: '/',
+      home: '/'
+    }
+  },
 
   /*
   ** Build configuration

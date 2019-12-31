@@ -28,6 +28,7 @@ func (h *userHandler) Route() chi.Router {
 	r := chi.NewRouter()
 	r.Post("/login", h.login)
 	r.Post("/register", h.register)
+	r.Get("/me", h.me)
 
 	return r
 }
@@ -84,6 +85,21 @@ func (h *userHandler) register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sendResponse(w, http.StatusCreated, usr)
+}
+
+func (h *userHandler) me(w http.ResponseWriter, r *http.Request) {
+	authUser, ok := r.Context().Value(KeyAuthUser).(*messagerooms.User)
+
+	if !ok {
+		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
+		return
+	}
+
+	resp := struct {
+		User *messagerooms.User `json:"user"`
+	}{User: authUser}
+
+	sendResponse(w, http.StatusOK, resp)
 }
 
 // NewUserHandler returns new user handler.
