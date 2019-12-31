@@ -2,6 +2,14 @@
   <div class="booker">
     <nav-bar :name="auth.user.nickname"/>
     <div class="chat">
+      <div class="thread-list">
+        <div class="thread-item">
+          #general
+        </div>
+        <div class="thread-item">
+          #devOps
+        </div>
+      </div>
       <div class="container">
         <div class="msg-header">
           <div class="active">
@@ -45,9 +53,6 @@
                 <div v-else>
                   <div v-for="message in groupMessages" v-bind:key="message.id">
                     <div class="received-chats" v-if="message.created_by.id !== auth.user.id">
-<!--                      <div class="received-chats-img">-->
-<!--                        <img v-bind:src="message.sender.avatar" alt="" class="avatar">-->
-<!--                      </div>-->
 
                       <div class="received-msg">
                         <div class="received-msg-inbox">
@@ -61,10 +66,6 @@
                       <div class="outgoing-chats-msg">
                         <p>{{ message.message_text }}</p>
                       </div>
-
-<!--                      <div class="outgoing-chats-img">-->
-<!--                        <img v-bind:src="message.sender.avatar" alt="" class="avatar">-->
-<!--                      </div>-->
                     </div>
                   </div>
                 </div>

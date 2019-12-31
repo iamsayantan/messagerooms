@@ -130,7 +130,7 @@ func (evt *EventMessage) String() string {
 // NewEventsourceConnection returns a new EventsourceConnection
 func NewEventsourceConnection(user *User) *EventsourceConnection {
 	id, _ := uuid.NewV4()
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Second * 20)
 	closingChan := make(chan bool)
 
 	eventsourceConnection := &EventsourceConnection{
