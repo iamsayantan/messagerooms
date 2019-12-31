@@ -34,11 +34,26 @@ type roomHandler struct {
 
 func (h *roomHandler) Route() chi.Router {
 	router := chi.NewRouter()
+	router.Get("/", h.allRooms)
 	router.Get("/{roomID}", h.getRoomDetails)
 	router.Put("/{roomID}/join", h.joinRoom)
 	router.Get("/{roomID}/messages", h.getAllMessages)
 	router.Post("/{roomID}/messages", h.postMessage)
 	return router
+}
+
+func (h *roomHandler) allRooms(w http.ResponseWriter, r *http.Request) {
+	rooms, err := h.service.AllRooms()
+	if err != nil {
+		_ = render.Render(w, r, ErrInternalServer(err))
+		return
+	}
+
+	resp := struct {
+		Rooms []*messagerooms.Room `json:"rooms"`
+	}{Rooms: rooms}
+
+	sendResponse(w, http.StatusOK, resp)
 }
 
 func (h *roomHandler) getRoomDetails(w http.ResponseWriter, r *http.Request) {

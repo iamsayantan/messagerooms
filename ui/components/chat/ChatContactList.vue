@@ -7,22 +7,20 @@
       <v-divider></v-divider>
       <v-list two-line class="chat-contact--list">
         <v-subheader>Contacts</v-subheader>
-        <template v-for="(item, index) in users">
+        <template v-for="(room, index) in rooms">
           <v-divider :key="index"></v-divider>
-          <v-list-tile avatar :key="item.name + index" :to="contactRoute(item.uuid)">
+          <v-list-tile avatar :key="room.room_name + index" :to="contactRoute(room.id)">
             <v-list-tile-avatar color="primary">
-              <img :src="item.avatar.substring(0, 4) === 'http' ? item.avatar : require('@/static/avatar/' + item.avatar)"
-                   v-if="item.avatar">
-              <span v-else class="white--text headline">{{ firstLetter(item.name)}}</span>
+              <span class="white--text headline">{{ firstLetter(room.room_name)}}</span>
             </v-list-tile-avatar>
             <v-list-tile-content>
               <v-list-tile-title>
-                {{item.name}}
+                {{room.room_name}}
               </v-list-tile-title>
-              <v-list-tile-sub-title>{{item.jobTitle}}</v-list-tile-sub-title>
+              <v-list-tile-sub-title>This is an awesome room</v-list-tile-sub-title>
             </v-list-tile-content>
             <v-list-tile-action>
-              <v-circle dot small :color="userStatusColor(item)"></v-circle>
+              <v-circle dot small :color="userStatusColor(room)"></v-circle>
             </v-list-tile-action>
           </v-list-tile>
         </template>
@@ -36,18 +34,32 @@
   import VCircle from '@/components/circle/VCircle';
   import VuePerfectScrollbar from 'vue-perfect-scrollbar';
 
+  import {mapGetters} from 'vuex'
+
   export default {
     components: {
       VuePerfectScrollbar,
       VCircle
     },
+    mounted() {
+      this.fetchMessageRooms()
+    },
     data: () => ({}),
     computed: {
+      ...mapGetters(['rooms']),
       users() {
         return getUser();
       }
     },
     methods: {
+      async fetchMessageRooms() {
+        try {
+          const { data } = this.$axios.get('/rooms/v1')
+          console.log(data)
+        } catch (e) {
+          console.error(e)
+        }
+      },
       contactRoute(id) {
         return '/chat/contact/' + id;
       },
@@ -55,7 +67,7 @@
         return name.charAt(0);
       },
       userStatusColor(item) {
-        return (item.active) ? 'green' : 'grey';
+        return ((item.room_name % 2) === 0) ? 'green' : 'grey';
       }
     }
   };

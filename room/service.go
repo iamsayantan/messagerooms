@@ -22,6 +22,9 @@ type Service interface {
 	// RoomDetails returns details for the room with the id. Error is returned in case of invalid id.
 	RoomDetails(id string) (*messagerooms.Room, error)
 
+	// AllRooms returns list of all rooms available
+	AllRooms() ([]*messagerooms.Room, error)
+
 	// AddUserToRoom adds an user to a room.
 	AddUserToRoom(room messagerooms.Room, user messagerooms.User) error
 
@@ -39,6 +42,10 @@ type roomService struct {
 	room      messagerooms.RoomRepository
 	message   messagerooms.MessageRepository
 	publisher pubsub.Service
+}
+
+func (s *roomService) AllRooms() ([]*messagerooms.Room, error) {
+	return s.room.FindAll()
 }
 
 func (s *roomService) GetAllRoomMessages(room messagerooms.Room) ([]*messagerooms.Message, error) {

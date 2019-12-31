@@ -32,6 +32,9 @@
       ChatHistory,
       ChatWindow
     },
+    mounted() {
+      this.fetchMessageRooms()
+    },
     data () {
       return {
       };
@@ -44,5 +47,15 @@
         return this.$route.params.uuid !== undefined;
       },
     },
+    methods: {
+      async fetchMessageRooms() {
+        try {
+          const { data } = await this.$axios.get('/rooms/v1')
+          this.$store.commit('storeRoms', data.rooms)
+        } catch (e) {
+          console.error(e)
+        }
+      },
+    }
   };
 </script>

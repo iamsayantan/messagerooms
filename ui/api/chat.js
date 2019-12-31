@@ -1,27 +1,11 @@
 import { getUser as User } from './user';
 // chat menu
 const Menu = [
-  { 
+  {
     text: 'Chat',
     icon: 'chat',
     to: { path: '/chat/messaging' },
-  },
-  { 
-    text: 'Contacts',
-    icon: 'contacts',
-    to: { path: '/chat/contact' },
-  },
-  { 
-    text: 'File',
-    icon: 'insert_drive_file',
-    to: { path: '/chat/media' },
-  },
-  { 
-    text: 'Settings',
-    icon: 'settings',
-    to: { path: '/chat/settings' },
-  },
-
+  }
 ];
 // chat group
 const Groups = [
@@ -464,7 +448,7 @@ const Messages = [
   }
 ];
 
-// Add user to map 
+// Add user to map
 Messages.map((item) => {
   let tmp  = User().find(x => x.uuid === item.userId);
   item.user = {

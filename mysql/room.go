@@ -32,6 +32,12 @@ func (r *roomRepository) Find(id string) (*messagerooms.Room, error) {
 	return &room, nil
 }
 
+func (r *roomRepository) FindAll() ([]*messagerooms.Room, error) {
+	var rooms []*messagerooms.Room
+	r.db.Preload("CreatedBy").Find(&rooms)
+	return rooms, nil
+}
+
 func (r *roomRepository) AddUserToRoom(room messagerooms.Room, user messagerooms.User) error {
 	if alreadyExistsInRoom := r.CheckUserExistsInRoom(room, user); alreadyExistsInRoom {
 		return ErrUserAlreadyMember
