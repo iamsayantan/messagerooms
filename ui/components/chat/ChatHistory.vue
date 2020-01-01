@@ -10,8 +10,7 @@
         <template v-for="(room, index) in rooms">
           <v-divider :key="index"></v-divider>
           <v-list-tile class="chat-list" avatar :key="room.room_id" :to="chatRoute(room.id)">
-            <v-list-tile-avatar :color="randomAvatarColor(room)">
-<!--              <img :src="item.user.avatar" v-if="item.users.length === 1">-->
+            <v-list-tile-avatar :color="randomAvatarColor()">
               <span class="white--text headline">{{ firstLetter(room.room_name)}}</span>
             </v-list-tile-avatar>
             <v-list-tile-content>
@@ -22,7 +21,7 @@
 <!--              <v-list-tile-action-text>-->
 <!--                {{ formatChatTime(item.created_at) }}-->
 <!--              </v-list-tile-action-text>-->
-              <v-circle dot small :color="chatStatusColor(room)"></v-circle>
+              <v-circle dot small :color="chatStatusColor()"></v-circle>
             </v-list-tile-action>
           </v-list-tile>
         </template>
@@ -60,18 +59,11 @@ export default {
     firstLetter (title) {
       return title.charAt(0);
     },
-    formatChatTime (s) {
-      return new Date(s).toLocaleDateString();
-    },
-    computeTitle (item) {
-      let username = (item.users.length === 1) ? getUserById(item.users[0]).username : '';
-      return item.users.length === 1 ? username : item.title;
-    },
-    randomAvatarColor (item) {
+    randomAvatarColor () {
       return Util.randomElement(['blue', 'indigo', 'success', 'error', 'pink']);
     },
 
-    chatStatusColor (item) {
+    chatStatusColor () {
       return Util.randomElement(['blue', 'indigo', 'success', 'error', 'pink']);
     }
   }
