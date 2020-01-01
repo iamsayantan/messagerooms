@@ -50,6 +50,9 @@
             password: this.login.password
           }
         })
+          .then(() => {
+            window.location.reload()
+          })
           .catch(e => {
             console.error(e)
             this.loading = false

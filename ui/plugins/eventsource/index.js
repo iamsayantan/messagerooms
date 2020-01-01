@@ -1,12 +1,15 @@
 import Handlers from './handlers'
-import store from '../store'
+import store from '../../store'
 
 import { EventSourcePolyfill } from 'event-source-polyfill'
 
-export default function configureEventSources (eventsourceRoute) {
+export default ({app, store}) => {
+  if (!app.$auth.loggedIn) return
+
+  const eventsourceRoute = 'http://localhost:9050/sse/connect'
   const eventSource = new EventSourcePolyfill(eventsourceRoute, {
     headers: {
-      'Authorization': store.getters.auth.accessToken
+      'Authorization': app.$auth.getToken('local')
     }
   });
 

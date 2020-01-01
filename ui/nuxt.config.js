@@ -52,7 +52,8 @@ module.exports = {
   */
   plugins: [
     '@/plugins/vuetify',
-    '@/plugins/vee-validate'
+    '@/plugins/vee-validate',
+    { src: '@/plugins/eventsource', ssr: false }
   ],
 
   /*
@@ -84,6 +85,7 @@ module.exports = {
         tokenType: ''
       }
     },
+    watchLoggedIn: false,
     redirect: {
       login: '/login',
       logout: '/',
