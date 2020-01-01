@@ -45,17 +45,30 @@ func (h *userHandler) login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var mr *malformedRequest
 		if errors.As(err, &mr) {
-			render.Render(w, r, ErrInvalidRequest(mr))
+			_ = render.Render(w, r, ErrInvalidRequest(mr))
 		} else {
-			render.Render(w, r, ErrInternalServer(err))
+			_ = render.Render(w, r, ErrInternalServer(err))
 		}
 		return
 	}
 
 	usr, er := h.service.Login(loginReq.Nickname, loginReq.Password)
 	if er != nil {
-		render.Render(w, r, ErrInvalidRequest(er))
-		return
+		// if error is invalid password, then just returning
+		if er == user.ErrInvalidPassword {
+			_ = render.Render(w, r, ErrInvalidRequest(er))
+			return
+		} else if er == user.ErrInvalidNickname {
+			// so if user is trying to login with a nickname with does not exist then we will create a new
+			// record with the given details and log the user in.
+			usr, er = h.service.NewUser(loginReq.Nickname, loginReq.Password)
+			if er != nil {
+				_ = render.Render(w, r, ErrInvalidRequest(er))
+				return
+			}
+		} else {
+			_ = render.Render(w, r, ErrInternalServer(er))
+		}
 	}
 
 	token, _ := h.service.GenerateAuthToken(*usr)
@@ -76,16 +89,16 @@ func (h *userHandler) register(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		var mr *malformedRequest
 		if errors.As(err, &mr) {
-			render.Render(w, r, ErrInvalidRequest(mr))
+			_ = render.Render(w, r, ErrInvalidRequest(mr))
 		} else {
-			render.Render(w, r, ErrInternalServer(err))
+			_ = render.Render(w, r, ErrInternalServer(err))
 		}
 		return
 	}
 
 	usr, er := h.service.NewUser(registerRequest.Nickname, registerRequest.Password)
 	if er != nil {
-		render.Render(w, r, ErrInvalidRequest(er))
+		_ = render.Render(w, r, ErrInvalidRequest(er))
 		return
 	}
 
