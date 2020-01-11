@@ -18,6 +18,9 @@ const HubChannel = "HubChannel"
 
 const (
 	TopicMessageRoom = "room"
+
+	TopicNewMessage = "NewMessage"
+	TopicNewRoom    = "NewRoom"
 )
 
 var (

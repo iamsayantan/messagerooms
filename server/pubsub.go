@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/render"
 	"github.com/gomodule/redigo/redis"
 	"github.com/iamsayantan/messagerooms"
+	"github.com/iamsayantan/messagerooms/pubsub"
 )
 
 // SSEHub maintains persistent eventsource connection to server.
@@ -21,6 +22,7 @@ type SSEHub struct {
 	CloseConnection chan messagerooms.EventsourceConnection       // CloseConnection is channel for any closing connection
 	OpenConnections map[string]messagerooms.EventsourceConnection // OpenConnections holds all the active open connections to the server
 
+	pubsub     pubsub.Service
 	pubsubConn *redis.PubSubConn
 }
 
@@ -83,34 +85,57 @@ func (s *SSEHub) Listen() {
 		for {
 			select {
 			case sseConn := <-s.NewConnection:
-				s.mu.Lock()
-				s.OpenConnections[sseConn.ConnectionID] = sseConn
-				s.mu.Unlock()
-
-				// send an initial event with the connection id
-				connectionEvt := struct {
-					ConnectionID string `json:"connection_id"`
-					ServerTime   int64  `json:"server_time"`
-				}{
-					ConnectionID: sseConn.ConnectionID,
-					ServerTime:   time.Now().Unix(),
-				}
-
-				msg := messagerooms.EventMessage{Event: messagerooms.ConnectionEvent, DestinationID: sseConn.ConnectionID, Data: connectionEvt}
-				sseConn.PublishEvent(msg)
-				sseConn.Heartbeat()
-
-				log.Printf("New client connected. ConnectionID: %s Number of registered clients %d", sseConn.ConnectionID, len(s.OpenConnections))
+				s.handleNewConnection(sseConn)
 			case sseConn := <-s.CloseConnection:
-				s.mu.Lock()
-				delete(s.OpenConnections, sseConn.ConnectionID)
-				s.mu.Unlock()
-
-				sseConn.Closing()
-				log.Printf("Removed client. ConnectionID %s Number of registered clients %d", sseConn.ConnectionID, len(s.OpenConnections))
+				s.handleClosingConnection(sseConn)
 			}
 		}
 	}()
+}
+
+// handleNewConnection handles new incoming eventsource connection. It adds the new connection to the hubs opened
+// connection map and registers heartbeat events for that particular connection. We also add the connection identifier
+// to the users personal topics.
+func (s *SSEHub) handleNewConnection(sseConn messagerooms.EventsourceConnection) {
+	s.mu.Lock()
+	s.OpenConnections[sseConn.ConnectionID] = sseConn
+	s.mu.Unlock()
+
+	// send an initial event with the connection id
+	connectionEvt := struct {
+		ConnectionID string `json:"connection_id"`
+		ServerTime   int64  `json:"server_time"`
+	}{
+		ConnectionID: sseConn.ConnectionID,
+		ServerTime:   time.Now().Unix(),
+	}
+
+	msg := messagerooms.EventMessage{Event: messagerooms.ConnectionEvent, DestinationID: sseConn.ConnectionID, Data: connectionEvt}
+	sseConn.PublishEvent(msg)
+	sseConn.Heartbeat()
+
+	for _, topic := range sseConn.User.GetPersonalTopics() {
+		s.pubsub.Subscribe(topic, sseConn.ConnectionID)
+	}
+
+	log.Printf("New client connected. ConnectionID: %s Number of registered clients %d", sseConn.ConnectionID, len(s.OpenConnections))
+}
+
+// handleClosingConnection does the cleaning up after a client disconnects from the server.
+func (s *SSEHub) handleClosingConnection(sseConn messagerooms.EventsourceConnection) {
+	s.mu.Lock()
+	delete(s.OpenConnections, sseConn.ConnectionID)
+	s.mu.Unlock()
+
+	sseConn.Closing()
+
+	// as we are subscribing the connection to user's personal topics when the connection is first being made, we need to
+	// clear that up when the connection is being closed.
+	for _, topic := range sseConn.User.GetPersonalTopics() {
+		s.pubsub.Unsubscribe(topic, sseConn.ConnectionID)
+	}
+
+	log.Printf("Removed client. ConnectionID %s Number of registered clients %d", sseConn.ConnectionID, len(s.OpenConnections))
 }
 
 // ReceiveHubEvents spawns a goroutine which listens
@@ -153,12 +178,13 @@ func (s *SSEHub) PublishToAllClients(msg *messagerooms.PublishEvent) {
 }
 
 // NewSSEHub returns a new hub instance.
-func NewSSEHub(conn *redis.PubSubConn) *SSEHub {
+func NewSSEHub(conn *redis.PubSubConn, pubsub pubsub.Service) *SSEHub {
 	sseHub := &SSEHub{
 		NewConnection:   make(chan messagerooms.EventsourceConnection),
 		CloseConnection: make(chan messagerooms.EventsourceConnection),
 		OpenConnections: make(map[string]messagerooms.EventsourceConnection),
 		pubsubConn:      conn,
+		pubsub:          pubsub,
 	}
 
 	// subscribe to the hub channel.

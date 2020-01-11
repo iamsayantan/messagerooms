@@ -85,7 +85,7 @@ func main() {
 
 	pubsubConn = &redis.PubSubConn{Conn: rSubConn}
 
-	hub := server.NewSSEHub(pubsubConn)
+	hub := server.NewSSEHub(pubsubConn, pubsubService)
 	srv := server.NewServer(userService, roomService, hub)
 
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", defaultServerPort), srv))

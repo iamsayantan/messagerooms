@@ -1,6 +1,8 @@
 package pubsub
 
 import (
+	"log"
+
 	"github.com/gomodule/redigo/redis"
 	"github.com/iamsayantan/messagerooms"
 )
@@ -8,10 +10,31 @@ import (
 // Service interface defines methods for interacting with the pubsub system.
 type Service interface {
 	Publish(data messagerooms.Publishable)
+
+	// Subscribe adds the given connection id to the topic's subscribed connection list. During publish
+	// we fetch all the connectionIDs and dispatch it to the client.
+	Subscribe(topic, connectionID string)
+	Unsubscribe(topic, connectionID string)
 }
 
 type redisPubsubService struct {
 	redisConn redis.Conn
+}
+
+func (rs *redisPubsubService) Subscribe(topic, connectionID string) {
+	_, err := rs.redisConn.Do("LPUSH", topic, connectionID)
+	if err != nil {
+		log.Printf("Error: %s, subscribing to topic: %s, connectionID: %s", err.Error(), topic, connectionID)
+	}
+}
+
+func (rs *redisPubsubService) Unsubscribe(topic, connectionID string) {
+	// connection id is stored as a list in redis against the topic name. so to unsubscribe we just need to
+	// do LREM the connection id from the list.
+	_, err := rs.redisConn.Do("LREM", topic, 1, connectionID)
+	if err != nil {
+		log.Printf("Error: %s, unsubscribing to topic: %s, connectionID: %s", err.Error(), topic, connectionID)
+	}
 }
 
 func (rs *redisPubsubService) Publish(data messagerooms.Publishable) {
