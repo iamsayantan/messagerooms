@@ -19,6 +19,12 @@ type roomRepository struct {
 	db *gorm.DB
 }
 
+func (r *roomRepository) GetRoomMembers(room messagerooms.Room) ([]*messagerooms.User, error) {
+	var users []*messagerooms.User
+	r.db.Model(&room).Related(&users, "Users")
+	return users, nil
+}
+
 func (r *roomRepository) Create(name string, user messagerooms.User) (*messagerooms.Room, error) {
 	panic("implement me")
 }

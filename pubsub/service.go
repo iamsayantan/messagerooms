@@ -38,12 +38,22 @@ func (rs *redisPubsubService) Unsubscribe(topic, connectionID string) {
 }
 
 func (rs *redisPubsubService) Publish(data messagerooms.Publishable) {
-	publishEvent := data.ToPublish()
-	jsonEvent, err := publishEvent.ToJSON()
+	// for publishing data we find all the connection id that is subscribed to the given topic and prepare
+	// event for all of those connection ids and publish
+	topic := data.GetTopic()
+	connIDs, err := redis.Strings(rs.redisConn.Do("LRANGE", topic, 0, -1))
 	if err != nil {
-		return // silently ignoring the error
+		log.Printf("Error: %s, fetching topic: %s, ", err.Error(), topic)
 	}
-	_, _ = rs.redisConn.Do("PUBLISH", messagerooms.HubChannel, jsonEvent)
+
+	for _, connID := range connIDs {
+		publishEvent := data.ToPublish(connID)
+		jsonEvent, err := publishEvent.ToJSON()
+		if err != nil {
+			return // silently ignoring the error
+		}
+		_, _ = rs.redisConn.Do("PUBLISH", messagerooms.HubChannel, jsonEvent)
+	}
 }
 
 // NewRedisPubsubService returns an new instance of redis pubsub service

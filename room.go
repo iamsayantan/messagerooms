@@ -14,6 +14,7 @@ type RoomRepository interface {
 	Create(name string, user User) (*Room, error)
 	Find(id string) (*Room, error)
 	FindAll() ([]*Room, error)
+	GetRoomMembers(room Room) ([]*User, error)
 	AddUserToRoom(room Room, user User) error
 	CheckUserExistsInRoom(room Room, user User) bool
 }

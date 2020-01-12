@@ -17,25 +17,23 @@ type ServerEvent string
 const HubChannel = "HubChannel"
 
 const (
-	TopicMessageRoom = "room"
-
 	TopicNewMessage = "NewMessage"
 	TopicNewRoom    = "NewRoom"
 )
 
 var (
-	ConnectionEvent ServerEvent = "ClientConnection"
-	HeartbeatEvent  ServerEvent = "Heartbeat"
-	MessageEvent    ServerEvent = "MessageEvent"
+	ConnectionEvent  ServerEvent = "ClientConnection"
+	HeartbeatEvent   ServerEvent = "Heartbeat"
+	MessageRoomEvent ServerEvent = "MessageEvent"
 )
 
 // Publishable is the interface that all types must implement that wish to be published into the pubsub system.
 type Publishable interface {
-	// GetTopic returns an topic identifier for a model
+	// GetTopic returns an topic identifier for a publishable model
 	GetTopic() string
 
 	// ToPublish() method returns an PublishEvent that can be then pushed into the redis pubsub to be broadcast.
-	ToPublish() *PublishEvent
+	ToPublish(connID string) *PublishEvent
 }
 
 // EventsourceConnection represents a single persistent connection.
@@ -50,9 +48,10 @@ type EventsourceConnection struct {
 
 // PublishEvent is the container for publishing events.
 type PublishEvent struct {
-	Topic     string      `json:"topic"`      // Topic of the event.
-	CreatedAt int64       `json:"created_at"` // CreatedAt when the event was created. Can be used to track how much time it takes form creation to delivery.
-	Payload   interface{} `json:"payload"`    // Payload actual payload for the event.
+	ConnectionID string      `json:"connection_id"` // ConnectionID is used for sending the event to the open connection
+	Topic        string      `json:"topic"`         // Topic of the event.
+	CreatedAt    int64       `json:"created_at"`    // CreatedAt when the event was created. Can be used to track how much time it takes form creation to delivery.
+	Payload      interface{} `json:"payload"`       // Payload actual payload for the event.
 }
 
 // PublishEvent publishes an event to connection's SendChannel
@@ -147,10 +146,11 @@ func NewEventsourceConnection(user *User) *EventsourceConnection {
 }
 
 // NewPublishEvent returns a new PublishEvent
-func NewPublishEvent(topic string, payload interface{}) *PublishEvent {
+func NewPublishEvent(connID, topic string, payload interface{}) *PublishEvent {
 	return &PublishEvent{
-		Topic:     topic,
-		CreatedAt: time.Now().UnixNano(),
-		Payload:   payload,
+		ConnectionID: connID,
+		Topic:        topic,
+		CreatedAt:    time.Now().UnixNano(),
+		Payload:      payload,
 	}
 }

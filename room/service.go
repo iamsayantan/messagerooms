@@ -95,7 +95,11 @@ func (s *roomService) PostMessage(room messagerooms.Room, user messagerooms.User
 
 	// publishing the new message into the pubsub system.
 	go func() {
-		s.publisher.Publish(message)
+		users, _ := s.room.GetRoomMembers(room)
+		for _, user := range users {
+			messageEvent := messagerooms.NewMessageEvent{User: *user, Room: room, Message: *message}
+			s.publisher.Publish(&messageEvent)
+		}
 	}()
 
 	return message, nil

@@ -152,7 +152,7 @@ func (s *SSEHub) ReceiveHubEvents() {
 					break
 				}
 
-				s.PublishToAllClients(eventMessage)
+				s.publishEventToClient(eventMessage)
 				log.Printf("[Redis Message] Channel: %s, Message: %s\n", v.Channel, string(v.Data))
 			case redis.Subscription:
 				log.Printf("[Redis Subscription] Channel: %s, Kind: %s, Count: %d\n", v.Channel, v.Kind, v.Count)
@@ -164,15 +164,14 @@ func (s *SSEHub) ReceiveHubEvents() {
 	}()
 }
 
-// PublishToAllClients publishes any incoming event to all connected clients
-func (s *SSEHub) PublishToAllClients(msg *messagerooms.PublishEvent) {
-	for _, client := range s.OpenConnections {
+// publishEventToClient sends the event to the appropriate client over its eventsource connection.
+func (s *SSEHub) publishEventToClient(msg *messagerooms.PublishEvent) {
+	if client, ok := s.OpenConnections[msg.ConnectionID]; ok {
 		event := messagerooms.EventMessage{
-			Event:         messagerooms.MessageEvent,
+			Event:         messagerooms.MessageRoomEvent,
 			DestinationID: client.ConnectionID,
 			Data:          msg,
 		}
-
 		client.PublishEvent(event)
 	}
 }
