@@ -20,11 +20,19 @@ var (
 
 	// ErrMessageTextEmpty is returned when user posts messgae with blank string
 	ErrMessageTextEmpty = errors.New("message text should not be empty")
+
+	// ErrRoomNameEmpty is returned when user tries to create a room with empty room name
+	ErrRoomNameEmpty = errors.New("room name can not be empty")
 )
 
 // newMessageRequest request payload for posting new messages.
 type newMessageRequest struct {
 	MessageText string `json:"message_text"`
+}
+
+// createRoomRequest creates a new room.
+type createRoomRequest struct {
+	RoomName string `json:"room_name"`
 }
 
 type roomHandler struct {
@@ -35,11 +43,49 @@ type roomHandler struct {
 func (h *roomHandler) Route() chi.Router {
 	router := chi.NewRouter()
 	router.Get("/", h.allRooms)
+	router.Post("/", h.createRoom)
 	router.Get("/{roomID}", h.getRoomDetails)
 	router.Put("/{roomID}/join", h.joinRoom)
 	router.Get("/{roomID}/messages", h.getAllMessages)
 	router.Post("/{roomID}/messages", h.postMessage)
 	return router
+}
+
+func (h *roomHandler) createRoom(w http.ResponseWriter, r *http.Request) {
+	authenticatedUser, ok := r.Context().Value(KeyAuthUser).(*messagerooms.User)
+	if !ok {
+		_ = render.Render(w, r, ErrInvalidRequest(errors.New("could not get user")))
+		return
+	}
+
+	var req createRoomRequest
+	err := decodeJSONBody(w, r, &req)
+	if err != nil {
+		var mr *malformedRequest
+		if errors.As(err, &mr) {
+			_ = render.Render(w, r, ErrInvalidRequest(mr))
+		} else {
+			_ = render.Render(w, r, ErrInternalServer(err))
+		}
+		return
+	}
+
+	if req.RoomName == "" {
+		_ = render.Render(w, r, ErrInvalidRequest(ErrRoomNameEmpty))
+		return
+	}
+
+	createdRoom, err := h.service.CreateNewRoom(req.RoomName, *authenticatedUser)
+	if err != nil {
+		_ = render.Render(w, r, ErrInvalidRequest(err))
+		return
+	}
+
+	resp := struct {
+		Room messagerooms.Room `json:"createdRoom"`
+	}{Room: *createdRoom}
+	sendResponse(w, http.StatusOK, resp)
+
 }
 
 func (h *roomHandler) allRooms(w http.ResponseWriter, r *http.Request) {
