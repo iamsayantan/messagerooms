@@ -20,6 +20,7 @@
     "nuxt": "^2.4.2",
     "roboto-fontface": "*",
     "vee-validate": "^2.1.7",
+    "vue-chat-scroll": "^1.3.6",
     "vue-perfect-scrollbar": "^0.1.0",
     "vuetify": "^1.4.4",
     "vuetify-loader": "^1.2.0"

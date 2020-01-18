@@ -22,21 +22,23 @@
     <template v-if="selected_room_details.is_member">
       <vue-perfect-scrollbar id="chat-messages" class="chat-room--scrollbar grey lighten-5" v-bind:style="computeHeight">
         <v-card-text class="chat-room--list pa-3">
-          <template v-for="(message, index) in room_messages">
-            <div v-bind:class="[ message.created_by.id === $auth.user.id ? 'reverse' : '']" class="messaging-item layout row my-4" :key="index">
-              <v-avatar class="indigo mx-1" size="40">
-                <span class="white--text headline">{{message.created_by.nickname[0]}}</span>
-              </v-avatar>
-              <div class="messaging--body layout column mx-2">
-                <p :value="true" v-bind:class="[ message.created_by.id === $auth.user.id ? 'primary white--text' : 'white']" class="pa-2">
-                  {{message.message_text}}
-                </p>
-                <div class="caption px-2 text--secondary" v-if="message.created_by.id !== $auth.user.id">{{message.created_by.nickname}} ({{new Date(message.created_at).toDateString()}})</div>
-                <div class="caption px-2 text--secondary"  v-else>You ({{new Date(message.created_at).toDateString()}})</div>
+          <div v-chat-scroll="{always: true, smooth: true}">
+            <template v-for="(message, index) in room_messages">
+              <div v-bind:class="[ message.created_by.id === $auth.user.id ? 'reverse' : '']" class="messaging-item layout row my-4" :key="index">
+                <v-avatar class="indigo mx-1" size="40">
+                  <span class="white--text headline">{{message.created_by.nickname[0]}}</span>
+                </v-avatar>
+                <div class="messaging--body layout column mx-2">
+                  <p :value="true" v-bind:class="[ message.created_by.id === $auth.user.id ? 'primary white--text' : 'white']" class="pa-2">
+                    {{message.message_text}}
+                  </p>
+                  <div class="caption px-2 text--secondary" v-if="message.created_by.id !== $auth.user.id">{{message.created_by.nickname}} ({{new Date(message.created_at).toDateString()}})</div>
+                  <div class="caption px-2 text--secondary"  v-else>You ({{new Date(message.created_at).toDateString()}})</div>
+                </div>
+                <v-spacer></v-spacer>
               </div>
-              <v-spacer></v-spacer>
-            </div>
-          </template>
+            </template>
+          </div>
         </v-card-text>
       </vue-perfect-scrollbar>
       <v-card-actions>
@@ -108,6 +110,15 @@ export default {
         this.fetchRoomMessages()
       },
       deep: true
+    },
+    room_messages: {
+      handler(val) {
+        // every time a new message is appended to the message list, we manually trigger
+        // scrollToBottom(). Otherwise the scroll was not happening.
+        this.$nextTick(() => {
+          this.scrollToBottom()
+        })
+      }
     }
   },
   methods: {
@@ -134,9 +145,6 @@ export default {
         });
 
         this.message_text = null
-        this.$nextTick(() => {
-          this.scrollToBottom()
-        })
       } catch (e) {
         console.error(e)
       }

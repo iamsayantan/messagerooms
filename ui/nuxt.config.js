@@ -53,7 +53,8 @@ module.exports = {
   plugins: [
     '@/plugins/vuetify',
     '@/plugins/vee-validate',
-    { src: '@/plugins/eventsource', ssr: false }
+    { src: '@/plugins/eventsource', ssr: false },
+    { src: '@/plugins/chat-scroll', ssr: false }
   ],
 
   /*
