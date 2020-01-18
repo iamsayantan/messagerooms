@@ -127,10 +127,12 @@ export default {
       if (!this.selected_room_details.is_member || !this.message_text) return;
       this.sending = true
       try {
-        const {data} = await this.$axios.post(`/rooms/v1/${this.selected_room_details.room.id}/messages`, {
+        // we are not updating the message list from the message post response. the message will come back from
+        // realtime connection. where it will be appended in the list.
+        await this.$axios.post(`/rooms/v1/${this.selected_room_details.room.id}/messages`, {
           message_text: this.message_text
-        })
-        this.$store.commit('appendMessage', data.message)
+        });
+
         this.message_text = null
         this.$nextTick(() => {
           this.scrollToBottom()

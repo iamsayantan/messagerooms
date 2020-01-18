@@ -2,6 +2,9 @@ import {is} from "vee-validate/dist/rules.esm";
 
 export const state = () => ({
   drawer: true,
+  eventsource: {
+    connection_id: null
+  },
   rooms: [],
   selected_room: null,
   selected_room_details: {
@@ -15,9 +18,15 @@ export const mutations = {
   toggleDrawer(state) {
     state.drawer = !state.drawer
   },
+
   drawer(state, val) {
     state.drawer = val
   },
+
+  storeEventsourceConnection(state, connID) {
+    state.eventsource.connection_id = connID
+  },
+
   storeRooms(state, rooms) {
     state.rooms = rooms
   },

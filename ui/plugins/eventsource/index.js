@@ -1,5 +1,4 @@
 import Handlers from './handlers'
-import store from '../../store'
 
 import { EventSourcePolyfill } from 'event-source-polyfill'
 
@@ -23,7 +22,7 @@ export default ({app, store}) => {
 
   for (const handler of Handlers) {
     eventSource.addEventListener(handler.eventType, event => {
-      handler.handle(event)
+      handler.handle(event, store)
     })
   }
 }

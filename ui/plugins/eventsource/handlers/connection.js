@@ -1,8 +1,8 @@
 const connection = {
   eventType: 'ClientConnection',
-  handle: function (event) {
+  handle: function (event, store) {
     const parsed = JSON.parse(event.data)
-    console.log('[ClientConnection] Data', parsed)
+    store.commit('storeEventsourceConnection', parsed.connection_id)
   }
 }
 
