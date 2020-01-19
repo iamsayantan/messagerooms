@@ -4,11 +4,6 @@
       <v-btn icon>
         <v-icon color="text--secondary">keyboard_arrow_left</v-icon>
       </v-btn>
-      <template v-if="chat.users">
-        <v-avatar size="32" class="avatar-stack" v-for="(user_id,index) in chat.users" :key="index">
-          <img :src="getAvatar(user_id)" alt="">
-        </v-avatar>
-      </template>
       <v-spacer></v-spacer>
       <v-toolbar-title> <h4>{{ '#' + selected_room_details.room.room_name }}</h4></v-toolbar-title>
       <v-spacer></v-spacer>
@@ -88,15 +83,6 @@ export default {
   },
   computed: {
     ...mapGetters(['selected_room_details', 'room_messages']),
-    chat () {
-      let chatOrigin = {
-        title: 'Chat',
-        users: [],
-        messages: []
-      };
-      let chat = getChatById(this.$route.params.uuid);
-      return Object.assign(chatOrigin, chat);
-    },
     computeHeight () {
       return {
         height: this.height || ''

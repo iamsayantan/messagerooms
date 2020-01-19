@@ -43,7 +43,7 @@ type roomHandler struct {
 func (h *roomHandler) Route() chi.Router {
 	router := chi.NewRouter()
 	router.Get("/", h.allRooms)
-	router.Post("/", h.createRoom)
+	router.Post("/create", h.createRoom)
 	router.Get("/{roomID}", h.getRoomDetails)
 	router.Put("/{roomID}/join", h.joinRoom)
 	router.Get("/{roomID}/messages", h.getAllMessages)
@@ -82,7 +82,7 @@ func (h *roomHandler) createRoom(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := struct {
-		Room messagerooms.Room `json:"createdRoom"`
+		Room messagerooms.Room `json:"room"`
 	}{Room: *createdRoom}
 	sendResponse(w, http.StatusOK, resp)
 

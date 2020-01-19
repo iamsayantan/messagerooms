@@ -5,6 +5,7 @@ import (
 
 	"github.com/iamsayantan/messagerooms"
 	"github.com/jinzhu/gorm"
+	uuid "github.com/satori/go.uuid"
 )
 
 var (
@@ -26,7 +27,15 @@ func (r *roomRepository) GetRoomMembers(room messagerooms.Room) ([]*messagerooms
 }
 
 func (r *roomRepository) Create(name string, user messagerooms.User) (*messagerooms.Room, error) {
-	panic("implement me")
+	id, _ := uuid.NewV4()
+	room := messagerooms.Room{
+		ID:       id.String(),
+		RoomName: name,
+		UserID:   user.ID,
+	}
+
+	r.db.Create(&room)
+	return &room, nil
 }
 
 func (r *roomRepository) Find(id string) (*messagerooms.Room, error) {

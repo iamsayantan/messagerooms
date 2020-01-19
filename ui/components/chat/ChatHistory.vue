@@ -31,7 +31,6 @@
 </template>
 
 <script>
-import { Groups } from '@/api/chat';
 import { getUserById } from '@/api/user';
 import VCircle from '@/components/circle/VCircle';
 import Util from '@/util';
@@ -45,7 +44,6 @@ export default {
   },
 
   data: () => ({
-    chats: Groups,
   }),
 
   computed: {

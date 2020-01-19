@@ -20,9 +20,7 @@ export default {
   getPost: Post.getPost,
   // chat
   getChatMenu: Chat.Menu,
-  getChatGroup: Chat.Groups,
-  getChatGroupById: Chat.getChatById,
-  // FIle 
+  // FIle
   getFile: Files.getFile,
   getFileMenu: Files.getFileMenu,
   // mail

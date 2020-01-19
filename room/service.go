@@ -58,7 +58,7 @@ func (s *roomService) CreateNewRoom(roomName string, user messagerooms.User) (*m
 		return nil, err
 	}
 
-	return room, nil
+	return s.RoomDetails(room.ID)
 }
 
 func (s *roomService) RoomDetails(id string) (*messagerooms.Room, error) {
