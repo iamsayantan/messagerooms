@@ -66,6 +66,7 @@ export default {
       try {
         const { data } = await this.$axios.post(`/rooms/v1/create`, this.room_create);
         this.$store.commit('appendRoom', data.room)
+        this.room_create.room_name = null
         this.dialog = false
       } catch (e) {
         console.error(e)
