@@ -27,7 +27,7 @@ func (r *roomRepository) GetRoomMembers(room messagerooms.Room) ([]*messagerooms
 }
 
 func (r *roomRepository) Create(name string, user messagerooms.User) (*messagerooms.Room, error) {
-	id, _ := uuid.NewV4()
+	id := uuid.NewV4()
 	room := messagerooms.Room{
 		ID:       id.String(),
 		RoomName: name,

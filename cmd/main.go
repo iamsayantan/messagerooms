@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gomodule/redigo/redis"
 	"github.com/iamsayantan/messagerooms"
 	"github.com/iamsayantan/messagerooms/mysql"
@@ -14,13 +15,14 @@ import (
 	"github.com/iamsayantan/messagerooms/user"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )
 
 const (
 	defaultDBHost     = "127.0.0.1"
 	defaultDBPort     = "3306"
 	defaultDBUsername = "root"
-	defaultDBPassword = ""
+	defaultDBPassword = "12345"
 	defaultDBName     = "rooms"
 
 	defaultServerPort = "9050"
@@ -79,9 +81,20 @@ func main() {
 	roomRepo = mysql.NewRoomRepository(db)
 	messageRepo = mysql.NewMessageRepository(db)
 
+	labelNames := []string{"method"}
+
 	pubsubService = pubsub.NewRedisPubsubService(rPubConn)
 	userService = user.NewService(userRepo)
 	roomService = room.NewService(roomRepo, messageRepo, pubsubService)
+	roomService = room.NewInstrumentingService(
+		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: "api",
+			Subsystem: "room_service",
+			Name:      "request_count",
+			Help:      "Number of requests received",
+		}, labelNames),
+		roomService,
+	)
 
 	pubsubConn = &redis.PubSubConn{Conn: rSubConn}
 

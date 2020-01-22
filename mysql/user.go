@@ -18,7 +18,7 @@ type userRepository struct {
 }
 
 func (u *userRepository) Create(nickname, password string) (*messagerooms.User, error) {
-	id, _ := uuid.NewV4()
+	id := uuid.NewV4()
 	user := messagerooms.User{
 		ID:       id.String(),
 		Nickname: nickname,

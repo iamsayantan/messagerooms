@@ -11,7 +11,6 @@ import (
 	"github.com/go-chi/chi"
 
 	"github.com/iamsayantan/messagerooms/room"
-	"gopkg.in/go-playground/validator.v10"
 )
 
 var (
@@ -36,8 +35,7 @@ type createRoomRequest struct {
 }
 
 type roomHandler struct {
-	service  room.Service
-	validate *validator.Validate
+	service room.Service
 }
 
 func (h *roomHandler) Route() chi.Router {
@@ -258,7 +256,7 @@ func (h *roomHandler) getAllMessages(w http.ResponseWriter, r *http.Request) {
 }
 
 // newRoomHandler returns a new roomHandler instance.
-func newRoomHandler(rs room.Service, v *validator.Validate) WebHandler {
-	rh := &roomHandler{service: rs, validate: v}
+func newRoomHandler(rs room.Service) WebHandler {
+	rh := &roomHandler{service: rs}
 	return rh
 }

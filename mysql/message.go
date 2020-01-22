@@ -19,7 +19,7 @@ type messageRepository struct {
 }
 
 func (m *messageRepository) PostMessage(room messagerooms.Room, user messagerooms.User, messageText string) (*messagerooms.Message, error) {
-	id, _ := uuid.NewV4()
+	id := uuid.NewV4()
 	msg := messagerooms.Message{
 		ID:          id.String(),
 		MessageText: messageText,

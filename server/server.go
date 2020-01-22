@@ -8,8 +8,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/cors"
-
-	"gopkg.in/go-playground/validator.v10"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/go-chi/chi"
 	chiware "github.com/go-chi/chi/middleware"
@@ -42,7 +41,6 @@ func NewServer(us user.Service, rs room.Service, hub *SSEHub) *Server {
 		Hub:  hub,
 	}
 
-	validate := validator.New()
 	corsHandler := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -71,15 +69,17 @@ func NewServer(us user.Service, rs room.Service, hub *SSEHub) *Server {
 	})
 
 	r.Route("/user", func(r chi.Router) {
-		h := NewUserHandler(us, validate, am)
+		h := NewUserHandler(us, am)
 		r.Mount("/v1", h.Route())
 	})
 
 	r.Route("/rooms", func(r chi.Router) {
 		r.Use(am.Register)
-		h := newRoomHandler(rs, validate)
+		h := newRoomHandler(rs)
 		r.Mount("/v1", h.Route())
 	})
+
+	r.Method("GET", "/metrics", promhttp.Handler())
 
 	s.router = r
 

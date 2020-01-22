@@ -7,8 +7,6 @@ import (
 	"github.com/iamsayantan/messagerooms"
 	"github.com/iamsayantan/messagerooms/user"
 
-	"gopkg.in/go-playground/validator.v10"
-
 	"github.com/go-chi/render"
 
 	"github.com/go-chi/chi"
@@ -22,7 +20,6 @@ type authRequest struct {
 type userHandler struct {
 	authMiddleware Middleware
 	service        user.Service
-	validate       *validator.Validate
 }
 
 func (h *userHandler) Route() chi.Router {
@@ -121,7 +118,7 @@ func (h *userHandler) me(w http.ResponseWriter, r *http.Request) {
 }
 
 // NewUserHandler returns new user handler.
-func NewUserHandler(s user.Service, v *validator.Validate, am Middleware) WebHandler {
-	h := &userHandler{service: s, validate: v, authMiddleware: am}
+func NewUserHandler(s user.Service, am Middleware) WebHandler {
+	h := &userHandler{service: s, authMiddleware: am}
 	return h
 }
