@@ -88,10 +88,15 @@ func main() {
 	roomService = room.NewService(roomRepo, messageRepo, pubsubService)
 	roomService = room.NewInstrumentingService(
 		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
-			Namespace: "api",
+			Namespace: "messagerooms_api",
 			Subsystem: "room_service",
 			Name:      "request_count",
 			Help:      "Number of requests received",
+		}, labelNames),
+		kitprometheus.NewSummaryFrom(stdprometheus.SummaryOpts{
+			Namespace: "messagerooms_api",
+			Subsystem: "room_service",
+			Name:      "request_latency",
 		}, labelNames),
 		roomService,
 	)
