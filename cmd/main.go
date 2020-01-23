@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -29,9 +30,17 @@ const (
 )
 
 func main() {
+	dbHost := flag.String("db.host", defaultDBHost, "Database host url")
+	dbPort := flag.String("db.port", defaultDBPort, "Database port")
+	dbUsername := flag.String("db.username", defaultDBUsername, "Database username")
+	dbPassword := flag.String("db.password", defaultDBPassword, "Database password")
+	serverPort := flag.String("server.port", defaultServerPort, "Server port where the server runs")
+
+	flag.Parse()
+
 	// connect to the database
 	// format: "user:password@tcp(127.0.0.1:3306)/dbname?charset=utf8&parseTime=True&loc=Local"
-	dbCred := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", defaultDBUsername, defaultDBPassword, defaultDBHost, defaultDBPort, defaultDBName)
+	dbCred := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", *dbUsername, *dbPassword, *dbHost, *dbPort, defaultDBName)
 	log.Printf("Database Credential: %s", dbCred)
 
 	db, err := gorm.Open("mysql", dbCred)
@@ -106,5 +115,6 @@ func main() {
 	hub := server.NewSSEHub(pubsubConn, pubsubService)
 	srv := server.NewServer(userService, roomService, hub)
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", defaultServerPort), srv))
+	log.Printf("Server starting on port %s", *dbPort)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", *serverPort), srv))
 }
