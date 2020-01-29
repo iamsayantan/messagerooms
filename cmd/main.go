@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gomodule/redigo/redis"
@@ -27,7 +28,9 @@ var (
 	defaultDBPassword = getFromEnv("MYSQL_PASSWORD", "12345")
 	defaultDBName     = getFromEnv("DATABASE_NAME", "rooms")
 
-	defaultServerPort = "9050"
+	defaultServerPort      = "9050"
+	maxDBConnectionAttempt = 10
+	ticker                 *time.Ticker
 )
 
 func getFromEnv(key, defaultValue string) string {
@@ -59,7 +62,41 @@ func main() {
 	db, err := gorm.Open("mysql", dbCred)
 
 	if err != nil {
-		panic(err.Error())
+		time.Sleep(5 * time.Second)
+		db, err = gorm.Open("mysql", dbCred)
+
+		if err != nil {
+			panic(err.Error())
+		}
+		//log.Println("Database connection failed. Retrying in 5 seconds.")
+		//ticker = time.NewTicker(5 * time.Second)
+		//exit :=  make(chan bool)
+		//
+		//for {
+		//	if maxDBConnectionAttempt == 0 {
+		//		panic(err.Error())
+		//	}
+		//
+		//	if err == nil {
+		//		break
+		//	}
+		//
+		//	select {
+		//	case <-ticker.C:
+		//		log.Println("Retrying DB connection.")
+		//		db, err = gorm.Open("mysql", dbCred)
+		//		if err == nil {
+		//			ticker.Stop()
+		//			exit <- true
+		//			maxDBConnectionAttempt = 10
+		//			break
+		//		} else {
+		//			maxDBConnectionAttempt--
+		//		}
+		//	case <-exit:
+		//		log.Println("Connection made.")
+		//	}
+		//}
 	}
 
 	defer db.Close()
