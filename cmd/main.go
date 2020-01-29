@@ -109,7 +109,7 @@ func main() {
 		// Pubsub related initialization
 		pubsubConn *redis.PubSubConn
 		redisConn  = func() (redis.Conn, error) {
-			return redis.Dial("tcp", ":6379")
+			return redis.Dial("tcp", "redis:6379")
 		}
 
 		// Repositories

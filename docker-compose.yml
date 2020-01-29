@@ -37,6 +37,8 @@ services:
       - "80:80"
     networks:
       - messagenet
+  redis:
+    image: "redis:alpine"
   messagerooms-ui:
     image: sayantan94/messagerooms-ui:0.1.1
     networks:
