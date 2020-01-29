@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gomodule/redigo/redis"
@@ -19,15 +20,24 @@ import (
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 )
 
-const (
-	defaultDBHost     = "127.0.0.1"
-	defaultDBPort     = "3306"
-	defaultDBUsername = "root"
-	defaultDBPassword = "12345"
-	defaultDBName     = "rooms"
+var (
+	defaultDBHost     = getFromEnv("MYSQL_HOST", "localhost")
+	defaultDBPort     = getFromEnv("MYSQL_PORT", "3306")
+	defaultDBUsername = getFromEnv("MYSQL_USERNAME", "root")
+	defaultDBPassword = getFromEnv("MYSQL_PASSWORD", "12345")
+	defaultDBName     = getFromEnv("DATABASE_NAME", "rooms")
 
 	defaultServerPort = "9050"
 )
+
+func getFromEnv(key, defaultValue string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return defaultValue
+	}
+
+	return val
+}
 
 func main() {
 	dbHost := flag.String("db.host", defaultDBHost, "Database host url")
@@ -35,6 +45,9 @@ func main() {
 	dbUsername := flag.String("db.username", defaultDBUsername, "Database username")
 	dbPassword := flag.String("db.password", defaultDBPassword, "Database password")
 	serverPort := flag.String("server.port", defaultServerPort, "Server port where the server runs")
+
+	mysqlHost := os.Getenv("MYSQL_HOST")
+	log.Printf("ENV Database host: %s", mysqlHost)
 
 	flag.Parse()
 

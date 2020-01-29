@@ -1,0 +1,52 @@
+version: '3.7'
+
+services:
+  messagerooms-api:
+    image: sayantan94/messagerooms-api:0.1.2
+    environment:
+      MYSQL_HOST: 'messagerooms-db'
+      MYSQL_USERNAME: 'user'
+      MYSQL_PASSWORD: '12345'
+      DATABASE_NAME: 'rooms'
+    depends_on:
+      - messagerooms-db
+    command: ["./wait-for", "messagerooms-db:3306", "--", "messagerooms"]
+    expose:
+      - "9050"
+    networks:
+      - messagenet
+  messagerooms-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'rooms'
+      MYSQL_USER: 'user'
+      MYSQL_PASSWORD: '12345'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - messagerooms-db:/var/lib/mysql
+    networks:
+      - messagenet
+  nginx:
+    image: sayantan94/messagerooms-nginx:latest
+    ports:
+      - "80:80"
+    networks:
+      - messagenet
+  messagerooms-ui:
+    image: sayantan94/messagerooms-ui:0.1.1
+    networks:
+      - messagenet
+networks:
+  messagenet:
+secrets:
+  MYSQL_USERNAME:
+    external: true
+  MYSQL_PASSWORD:
+    external: true
+volumes:
+  messagerooms-db:

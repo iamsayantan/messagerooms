@@ -21,4 +21,5 @@ RUN go build -o messagerooms cmd/main.go
 FROM scratch
 WORKDIR /messagerooms
 COPY --from=builder /go/src/github.com/iamsayantan/messagerooms/messagerooms .
+EXPOSE 9050
 ENTRYPOINT ["./messagerooms"]
