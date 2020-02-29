@@ -68,35 +68,7 @@ func main() {
 		if err != nil {
 			panic(err.Error())
 		}
-		//log.Println("Database connection failed. Retrying in 5 seconds.")
-		//ticker = time.NewTicker(5 * time.Second)
-		//exit :=  make(chan bool)
-		//
-		//for {
-		//	if maxDBConnectionAttempt == 0 {
-		//		panic(err.Error())
-		//	}
-		//
-		//	if err == nil {
-		//		break
-		//	}
-		//
-		//	select {
-		//	case <-ticker.C:
-		//		log.Println("Retrying DB connection.")
-		//		db, err = gorm.Open("mysql", dbCred)
-		//		if err == nil {
-		//			ticker.Stop()
-		//			exit <- true
-		//			maxDBConnectionAttempt = 10
-		//			break
-		//		} else {
-		//			maxDBConnectionAttempt--
-		//		}
-		//	case <-exit:
-		//		log.Println("Connection made.")
-		//	}
-		//}
+
 	}
 
 	defer db.Close()
