@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	uuid "github.com/satori/go.uuid"
@@ -56,6 +57,7 @@ type PublishEvent struct {
 
 // PublishEvent publishes an event to connection's SendChannel
 func (ec *EventsourceConnection) PublishEvent(evt EventMessage) {
+	log.Printf("Publishing event: %s, Destination: %s", evt.Event, evt.DestinationID)
 	ec.SendCh <- evt
 }
 

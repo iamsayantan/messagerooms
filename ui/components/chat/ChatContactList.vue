@@ -54,7 +54,7 @@
     methods: {
       async fetchMessageRooms() {
         try {
-          const { data } = this.$axios.get('/rooms/v1')
+          const { data } = this.$axios.get('/api/rooms/v1')
           console.log(data)
         } catch (e) {
           console.error(e)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/cors"
@@ -30,6 +31,7 @@ type Server struct {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Received HTTP Request: %s", r.URL)
 	s.router.ServeHTTP(w, r)
 }
 

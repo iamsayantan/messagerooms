@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
   messagerooms-api:
-    image: sayantan94/messagerooms-api:0.1.2
+    image: sayantan94/messagerooms-api:0.1.3
     environment:
       MYSQL_HOST: 'messagerooms-db'
       MYSQL_USERNAME: 'user'
@@ -13,6 +13,8 @@ services:
     command: ["./wait-for", "messagerooms-db:3306", "--", "messagerooms"]
     expose:
       - "9050"
+    ports: 
+      - '9050:9050'
     networks:
       - messagenet
   messagerooms-db:
@@ -34,11 +36,15 @@ services:
   nginx:
     image: sayantan94/messagerooms-nginx:latest
     ports:
-      - "80:80"
+      - "3000:80"
     networks:
       - messagenet
   redis:
     image: "redis:alpine"
+    ports: 
+      - "6379:6379"
+    networks: 
+      - messagenet
   messagerooms-ui:
     image: sayantan94/messagerooms-ui:0.1.1
     networks:

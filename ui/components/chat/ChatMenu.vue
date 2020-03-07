@@ -64,7 +64,7 @@ export default {
     async createRoom() {
       if (!this.room_create.room_name) return
       try {
-        const { data } = await this.$axios.post(`/rooms/v1/create`, this.room_create);
+        const { data } = await this.$axios.post(`/api/rooms/v1/create`, this.room_create);
         this.$store.commit('appendRoom', data.room)
         this.room_create.room_name = null
         this.dialog = false

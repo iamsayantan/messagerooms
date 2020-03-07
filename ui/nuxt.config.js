@@ -67,7 +67,7 @@ module.exports = {
   ],
 
   axios: {
-
+    baseUrl: '/'
   },
 
   router: {
@@ -78,9 +78,9 @@ module.exports = {
     strategies: {
       local: {
         endpoints: {
-          login: { url: '/user/v1/login', method: 'post', propertyName: 'access_token' },
-          logout: { url: '/user/v1/logout', method: 'post' },
-          user: { url: '/user/v1/me', method: 'get', propertyName: 'user' }
+          login: { url: '/api/user/v1/login', method: 'post', propertyName: 'access_token' },
+          logout: { url: '/api/user/v1/logout', method: 'post' },
+          user: { url: '/api/user/v1/me', method: 'get', propertyName: 'user' }
         },
         tokenRequired: true,
         tokenType: ''

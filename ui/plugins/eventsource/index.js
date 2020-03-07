@@ -5,7 +5,7 @@ import { EventSourcePolyfill } from 'event-source-polyfill'
 export default ({app, store}) => {
   if (!app.$auth.loggedIn) return
 
-  const eventsourceRoute = 'http://localhost:9050/sse/connect'
+  const eventsourceRoute = '/api/sse/connect'
   const eventSource = new EventSourcePolyfill(eventsourceRoute, {
     headers: {
       'Authorization': app.$auth.getToken('local')

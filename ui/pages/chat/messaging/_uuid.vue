@@ -60,7 +60,7 @@
     methods: {
       async fetchMessageRooms() {
         try {
-          const { data } = await this.$axios.get('/rooms/v1')
+          const { data } = await this.$axios.get('/api/rooms/v1')
           this.$store.commit('storeRooms', data.rooms)
         } catch (e) {
           console.error(e)
@@ -70,7 +70,7 @@
       async selectAndFetchRoom(roomID) {
         this.$store.commit('selectRoom', roomID)
         try {
-          const { data } = await this.$axios.get(`/rooms/v1/${this.selected_room}`)
+          const { data } = await this.$axios.get(`/api/rooms/v1/${this.selected_room}`)
           this.$store.commit('storeRoomDetails', {room: data.room_details, is_member: data.is_member})
           console.log(data.room_details)
         } catch (e) {

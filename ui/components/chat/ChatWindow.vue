@@ -111,7 +111,7 @@ export default {
     async fetchRoomMessages() {
       if (!this.selected_room_details.is_member) return;
       try {
-        const {data} = await this.$axios.get(`/rooms/v1/${this.selected_room_details.room.id}/messages`)
+        const {data} = await this.$axios.get(`/api/rooms/v1/${this.selected_room_details.room.id}/messages`)
         this.$store.commit('storeMessages', data.messages.reverse())
         this.$nextTick(() => {
           this.scrollToBottom()
@@ -126,7 +126,7 @@ export default {
       try {
         // we are not updating the message list from the message post response. the message will come back from
         // realtime connection. where it will be appended in the list.
-        await this.$axios.post(`/rooms/v1/${this.selected_room_details.room.id}/messages`, {
+        await this.$axios.post(`/api/rooms/v1/${this.selected_room_details.room.id}/messages`, {
           message_text: this.message_text
         });
 
@@ -140,7 +140,7 @@ export default {
     async joinRoom() {
       if (this.selected_room_details.is_member) return
       try {
-        const { data } = await this.$axios.put(`/rooms/v1/${this.selected_room_details.room.id}/join`)
+        const { data } = await this.$axios.put(`/api/rooms/v1/${this.selected_room_details.room.id}/join`)
         this.$emit('roomJoin', this.selected_room_details.room.id)
       } catch (e) {
         console.error(e)
