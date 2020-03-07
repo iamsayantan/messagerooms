@@ -49,7 +49,7 @@ func (s *SSEHub) HandleSSE(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("X-Accel-Buffering", "no")
+	w.Header().Set("X-Accel-Buffering", "no") // See https://stackoverflow.com/a/33414096/6662819
 	w.Header().Set("Access-Control-Allow-Origin", "*") // for now allowing cross origin requests.
 
 	eventSourceConn := messagerooms.NewEventsourceConnection(authUser)
